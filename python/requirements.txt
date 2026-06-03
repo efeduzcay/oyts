@@ -1,0 +1,39 @@
+# ============================================================
+#  Yangın Tespit Robotu — v3.0.0 Python Bağımlılıkları
+# ============================================================
+# Kurulum:
+#   pip install -r requirements.txt
+#
+# CUDA 12.1 için PyTorch ayrıca:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu121
+# ============================================================
+
+# Çekirdek görüntü işleme
+opencv-python>=4.9.0
+numpy>=1.24.0
+Pillow>=10.0.0
+
+# YOLOv8 (Ultralytics) - eğitim, çıkarım, eval
+ultralytics>=8.2.0
+
+# PyTorch (CUDA ile)
+torch>=2.2.0
+torchvision>=0.17.0
+
+# Donanım haberleşmesi
+pyserial>=3.5
+requests>=2.31.0
+
+# Web UI (Flask backend → mesleki-proje.github.io/live.html)
+Flask>=3.0.0
+
+# Eğitim & veri pipeline
+PyYAML>=6.0
+tqdm>=4.66.0
+albumentations>=1.4.0
+pandas>=2.0.0
+matplotlib>=3.7.0
+seaborn>=0.12.0
+
+# Test
+pytest>=8.0.0

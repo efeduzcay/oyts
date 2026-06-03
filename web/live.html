@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OYTS — Canlı Demo | Piri Reis Üniversitesi</title>
+    <meta name="description" content="OYTS Otonom Yangın Tespit Sistemi — canlı kamera, YOLOv8 tespit, RANSAC konum kestirimi, manuel sürüş.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFF; color: #1a202c; }
+        .hero-gradient { background: linear-gradient(135deg, #001f4d 0%, #0047AB 100%); }
+        .text-accent { color: #FF6B35; }
+        .bg-accent { background-color: #FF6B35; }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04); }
+        .card-header { padding: 1rem 1.25rem; border-bottom: 1px solid #f1f5f9; font-weight: 600; color: #1e293b; display:flex; align-items:center; gap:.6rem; }
+        .stat-row { display:flex; justify-content:space-between; align-items:center; padding:.7rem 1.25rem; border-bottom:1px solid #f1f5f9; }
+        .stat-row:last-child { border-bottom: none; }
+        .stat-key { color:#475569; font-weight:500; font-size:.9rem; }
+        .stat-val { font-weight:700; color:#0f172a; font-variant-numeric: tabular-nums; }
+        .pill { display:inline-flex; align-items:center; gap:.4rem; padding:.25rem .6rem; border-radius:9999px; font-size:.75rem; font-weight:600; }
+        .pill-dot { width:.5rem; height:.5rem; border-radius:9999px; }
+        .badge-on  { background:#dcfce7; color:#166534; }
+        .badge-off { background:#fee2e2; color:#991b1b; }
+        .badge-wait{ background:#fef3c7; color:#92400e; }
+        .live-img { width:100%; height:auto; border-radius: 0 0 1rem 1rem; display:block; background:#0f172a; }
+        /* Confidence bar */
+        .conf-bar { position:relative; width:100%; height:8px; background:#e2e8f0; border-radius:9999px; overflow:hidden; }
+        .conf-fill { position:absolute; left:0; top:0; bottom:0; background:linear-gradient(90deg,#21bf73 0%,#f5b800 60%,#e63946 90%); transition:width .25s ease; border-radius:9999px; }
+        .conf-tick { position:absolute; top:-3px; bottom:-3px; width:1px; background:#0f172a; }
+        /* Telemetri bar (heat / volt) */
+        .tele-bar { position:relative; width:100%; height:8px; background:#e2e8f0; border-radius:9999px; overflow:hidden; }
+        .tele-fill { position:absolute; left:0; top:0; bottom:0; transition:width .25s ease; border-radius:9999px; }
+        .heat-fill { background:linear-gradient(90deg,#21bf73,#f5b800,#e63946); }
+        .volt-fill { background:linear-gradient(90deg,#e63946,#f5b800,#21bf73); }
+        /* Sınıf chip'leri */
+        .cls-chip { display:inline-flex; align-items:center; gap:.4rem; padding:.3rem .65rem; border-radius:9999px; font-size:.78rem; font-weight:600; background:#f1f5f9; color:#0f172a; }
+        .cls-chip .dot { width:.45rem; height:.45rem; border-radius:9999px; }
+        .cls-chip.fire    { background:#fee2e2; color:#991b1b; } .cls-chip.fire    .dot { background:#dc2626; }
+        .cls-chip.default { background:#fed7aa; color:#9a3412; } .cls-chip.default .dot { background:#ea580c; }
+        .cls-chip.smoke   { background:#e2e8f0; color:#334155; } .cls-chip.smoke   .dot { background:#64748b; }
+        /* FPS rozeti */
+        .fps-badge { display:inline-flex; align-items:center; gap:.35rem; padding:.15rem .55rem; border-radius:9999px; font-size:.72rem; font-weight:700; }
+        .fps-good { background:#dcfce7; color:#166534; }
+        .fps-mid  { background:#fef3c7; color:#92400e; }
+        .fps-bad  { background:#fee2e2; color:#991b1b; }
+        /* Drive pad */
+        .pad-btn { user-select:none; -webkit-user-select:none; touch-action:manipulation; }
+        .pad-btn:active { transform: scale(0.96); }
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(255,107,53,.55); }
+            70%  { box-shadow: 0 0 0 14px rgba(255,107,53,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); }
+        }
+        .animate-pulse-ring { animation: pulse-ring 2s infinite; }
+        /* Fire alert flash */
+        @keyframes fire-flash {
+            0%, 100% { background-color: #fee2e2; }
+            50%      { background-color: #fecaca; }
+        }
+        .fire-alert { animation: fire-flash 1s infinite; }
+        /* Smooth number transitions */
+        .stat-val { transition: color .25s ease; }
+        .heatmap-bar {
+            position:relative; width:100%; height:6px; background:#e2e8f0;
+            border-radius:9999px; overflow:hidden; margin-top:4px;
+        }
+        .heatmap-fill {
+            position:absolute; left:0; top:0; bottom:0;
+            background:linear-gradient(90deg, #fde68a, #fb923c, #dc2626);
+            transition: width .3s ease; border-radius:9999px;
+        }
+        /* Source toggle chips */
+        .src-chip { color:#64748b; }
+        .src-chip:hover:not(.active) { background:#fff; color:#0f172a; }
+        .src-chip.active {
+            background:#0047AB; color:#fff;
+            box-shadow: 0 1px 3px rgba(0,71,171,.3);
+        }
+        .src-chip.loading { opacity:0.6; pointer-events:none; }
+        .src-chip[disabled] {
+            opacity:0.45; cursor:not-allowed;
+            background:repeating-linear-gradient(45deg,
+                #f1f5f9 0, #f1f5f9 6px, #e2e8f0 6px, #e2e8f0 12px);
+            color:#94a3b8;
+            position:relative;
+        }
+        .src-chip[disabled]:hover { background:repeating-linear-gradient(45deg,
+            #f1f5f9 0, #f1f5f9 6px, #e2e8f0 6px, #e2e8f0 12px); color:#94a3b8; }
+        .src-chip .chip-badge {
+            font-size:9px; padding:1px 4px; border-radius:4px;
+            background:#fecaca; color:#991b1b; margin-left:4px;
+            font-weight:700; letter-spacing:.02em;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ═══ Navigation ═══ -->
+    <nav class="fixed w-full z-50 transition-all duration-300 py-3 bg-white shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-12">
+                <a href="index.html" class="flex items-center gap-3">
+                    <i class="fa-solid fa-robot text-2xl text-[#0047AB]"></i>
+                    <span class="font-bold text-xl text-[#0047AB] tracking-tight">OYTS <span class="text-xs font-normal opacity-70 ml-2 hidden sm:inline">Piri Reis Üni.</span></span>
+                </a>
+                <div class="hidden lg:flex space-x-6 text-sm font-medium">
+                    <a href="index.html#problem"       class="text-gray-600 hover:text-[#0047AB] transition">Sorun</a>
+                    <a href="index.html#cozum"         class="text-gray-600 hover:text-[#0047AB] transition">Çözüm</a>
+                    <a href="index.html#nasil-calisir" class="text-gray-600 hover:text-[#0047AB] transition">Nasıl Çalışır?</a>
+                    <a href="index.html#galeri"        class="text-gray-600 hover:text-[#0047AB] transition">Galeri</a>
+                    <a href="live.html"                 class="text-[#FF6B35] font-bold">🔥 Canlı Demo</a>
+                </div>
+                <span class="pill badge-wait hidden sm:inline-flex" id="conn-pill">
+                    <span class="pill-dot bg-yellow-500"></span> backend bekleniyor
+                </span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ Header ═══ -->
+    <section class="hero-gradient pt-28 pb-12 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-4 text-sm font-medium text-white">
+                <span class="w-2 h-2 rounded-full bg-accent animate-pulse-ring"></span>
+                Canlı Sistem
+            </div>
+            <h1 class="text-4xl lg:text-5xl font-extrabold tracking-tight text-white">
+                🔥 Otonom Yangın Söndürme Sistemi
+            </h1>
+            <p class="text-blue-100 mt-3 max-w-2xl">
+                YOLOv8 tabanlı tespit, Bulanık Mantık önceliklendirme ve Simulated Annealing rota optimizasyonu. Lokal Flask backend'i üzerinden canlı yayın.
+            </p>
+            <div class="mt-4 flex flex-wrap gap-2 text-xs">
+                <span class="px-2.5 py-1 rounded-full bg-white/10 text-white border border-white/20">v3.1.1</span>
+                <span class="px-2.5 py-1 rounded-full bg-white/10 text-white border border-white/20" id="model-badge">model: —</span>
+                <span class="px-2.5 py-1 rounded-full bg-white/10 text-white border border-white/20">mAP50 0.93</span>
+                <span class="px-2.5 py-1 rounded-full bg-accent/30 text-white border border-accent/40">mixed: real + synthetic</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Backend Ayarı (collapsible) ═══ -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-6">
+        <details class="card p-4">
+            <summary class="cursor-pointer font-semibold text-slate-700 flex items-center gap-2">
+                <i class="fa-solid fa-gear text-[#0047AB]"></i>
+                Backend &amp; Kaynak Ayarı
+                <span class="ml-auto text-xs text-slate-400" id="backend-display"></span>
+            </summary>
+            <div class="mt-3 grid sm:grid-cols-3 gap-2">
+                <input id="backend-input" class="sm:col-span-2 border rounded-lg px-3 py-2 text-sm font-mono"
+                       placeholder="http://127.0.0.1:5050" />
+                <button id="backend-save"
+                        class="bg-[#0047AB] hover:bg-[#003a8a] text-white px-4 py-2 rounded-lg text-sm font-semibold">
+                    Kaydet &amp; Yenile
+                </button>
+            </div>
+            <div class="mt-3 flex flex-wrap gap-2 items-center">
+                <span class="text-xs text-slate-500 mr-1">Kaynak:</span>
+                <div id="source-toggle" class="inline-flex bg-slate-100 rounded-xl p-1 gap-0.5 shadow-inner">
+                    <button data-src="synthetic" class="src-chip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
+                        <i class="fa-solid fa-cube"></i>
+                        <span>Simülasyon</span>
+                    </button>
+                    <button data-src="webcam" class="src-chip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>Webcam</span>
+                    </button>
+                    <button data-src="esp32" class="src-chip flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all"
+                            disabled aria-disabled="true"
+                            title="ESP32-CAM donanımı şu an mevcut değil — webcam veya simülasyon modunu kullanın.">
+                        <i class="fa-solid fa-wifi"></i>
+                        <span>ESP32</span>
+                        <span class="chip-badge">DONANIM YOK</span>
+                    </button>
+                </div>
+                <select id="source-sel" class="hidden">
+                    <option value="webcam">webcam</option>
+                    <option value="esp32">esp32</option>
+                    <option value="synthetic">synthetic</option>
+                </select>
+                <span class="ml-auto text-[11px] text-slate-400">
+                    conf <span id="conf-th-disp">0.20</span> · imgsz <span id="imgsz-disp">—</span>
+                </span>
+            </div>
+            <p class="text-xs text-slate-500 mt-2">
+                <code>python web_app.py --port 5050 --autostart</code> ile backend'i başlat. CORS açıktır; GitHub Pages üstünden localhost'a bağlanır.
+            </p>
+        </details>
+    </div>
+
+    <!-- ═══ Ana Dashboard ═══ -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+            <!-- Sol: Sistem Durumu + Kontroller -->
+            <aside class="lg:col-span-3 space-y-6">
+                <div class="card" id="system-state">
+                    <div class="card-header">
+                        <i class="fa-solid fa-chart-simple text-[#0047AB]"></i>
+                        Sistem Durumu
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">Kamera Açısı (°)</span>
+                        <span class="stat-val" id="s-angle">—</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">Sistem Zamanı (ms)</span>
+                        <span class="stat-val" id="s-time">—</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">Yangın Tespiti</span>
+                        <span class="stat-val" id="s-fire">
+                            <span class="pill badge-wait">⏳ Bekleniyor</span>
+                        </span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">FPS</span>
+                        <span class="stat-val" id="s-fps">—</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">Stable Hedef</span>
+                        <span class="stat-val"><span id="s-stable">0</span> / <span id="s-raw">0</span></span>
+                    </div>
+                    <div style="padding:.7rem 1.25rem;border-bottom:1px solid #f1f5f9;">
+                        <div class="flex justify-between items-center mb-2">
+                            <span class="stat-key">Max Confidence</span>
+                            <span class="stat-val" id="s-conf">—</span>
+                        </div>
+                        <div class="conf-bar">
+                            <div class="conf-fill" id="s-conf-fill" style="width:0%"></div>
+                            <div class="conf-tick" id="s-conf-tick" style="left:20%" title="conf eşiği"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-1">
+                            <span>0</span><span id="s-conf-tick-label">0.20 ↑</span><span>1.0</span>
+                        </div>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">Öncelik (P)</span>
+                        <span class="stat-val" id="s-priority">—</span>
+                    </div>
+                    <div class="stat-row">
+                        <span class="stat-key">Mesafe (m)</span>
+                        <span class="stat-val" id="s-distance">—</span>
+                    </div>
+                    <div style="padding:.7rem 1.25rem;border-bottom:1px solid #f1f5f9;">
+                        <div class="flex justify-between items-center mb-1">
+                            <span class="stat-key">Risk Yoğunluğu</span>
+                            <span class="stat-val" id="s-hmap">—</span>
+                        </div>
+                        <div class="heatmap-bar"><div class="heatmap-fill" id="s-hmap-fill" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Telemetri kartı -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-thermometer-half text-[#FF6B35]"></i>
+                        Telemetri
+                    </div>
+                    <div style="padding:.7rem 1.25rem;border-bottom:1px solid #f1f5f9;">
+                        <div class="flex justify-between mb-2">
+                            <span class="stat-key">Sıcaklık</span>
+                            <span class="stat-val" id="s-heat">—</span>
+                        </div>
+                        <div class="tele-bar"><div class="tele-fill heat-fill" id="s-heat-fill" style="width:0%"></div></div>
+                    </div>
+                    <div style="padding:.7rem 1.25rem;">
+                        <div class="flex justify-between mb-2">
+                            <span class="stat-key">Voltaj (LiPo 3S)</span>
+                            <span class="stat-val" id="s-volt">—</span>
+                        </div>
+                        <div class="tele-bar"><div class="tele-fill volt-fill" id="s-volt-fill" style="width:0%"></div></div>
+                    </div>
+                </div>
+
+                <!-- Sınıf Dağılımı kartı -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-layer-group text-[#0047AB]"></i>
+                        Sınıf Dağılımı
+                    </div>
+                    <div class="p-3 flex flex-wrap gap-2 min-h-[3rem] items-center" id="s-classes">
+                        <span class="text-xs text-slate-400 italic">tespit yok</span>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-gamepad text-[#0047AB]"></i>
+                        Kontroller
+                    </div>
+                    <div class="p-4 space-y-2">
+                        <button id="btn-start"
+                                class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition shadow">
+                            <i class="fa-solid fa-play"></i> Sistemi Başlat
+                        </button>
+                        <button id="btn-stop"
+                                class="w-full bg-slate-800 hover:bg-slate-900 text-white font-semibold py-3 rounded-lg flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-stop"></i> Sistemi Durdur
+                        </button>
+                        <button id="btn-snapshot"
+                                class="w-full bg-[#FF6B35] hover:bg-[#e55a2b] text-white font-semibold py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+                            <i class="fa-solid fa-camera"></i> Anlık Görüntü
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Orta: Canlı Kamera + Manuel Sürüş -->
+            <section class="lg:col-span-5 space-y-6" id="cam-section">
+                <div class="card overflow-hidden">
+                    <div class="card-header">
+                        <i class="fa-solid fa-video text-[#0047AB]"></i>
+                        Canlı Kamera
+                        <span id="src-pill" class="ml-2 pill badge-on" style="background:#dbeafe;color:#1d4ed8;">WEBCAM</span>
+                        <span id="rec-dot" class="ml-auto pill badge-on hidden">
+                            <span class="pill-dot bg-red-500 animate-pulse"></span> LIVE
+                        </span>
+                    </div>
+                    <img id="cam" class="live-img" alt="canlı yayın"
+                         src="" />
+                    <div class="px-4 py-3 text-xs text-slate-500 border-t border-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-info"></i>
+                        Tespit edilen alev kırmızı kutu içinde "FIRE" etiketiyle gösterilir. Düşük conf'larda kutu titreşebilir.
+                    </div>
+                </div>
+
+                <!-- Manuel Sürüş -->
+                <div class="card">
+                    <div class="card-header">
+                        <i class="fa-solid fa-gamepad text-[#0047AB]"></i>
+                        Manuel Sürüş
+                        <span class="ml-auto text-[11px] text-slate-400">tuş: W A S D · X dur · K/L kol</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="grid grid-cols-3 gap-2 max-w-xs mx-auto">
+                            <div></div>
+                            <button data-cmd="W" class="pad-btn bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-4 rounded-lg shadow-sm">▲</button>
+                            <div></div>
+                            <button data-cmd="A" class="pad-btn bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-4 rounded-lg shadow-sm">◀</button>
+                            <button data-cmd="X" class="pad-btn bg-red-500 hover:bg-red-600 text-white font-bold py-4 rounded-lg shadow-sm">■</button>
+                            <button data-cmd="D" class="pad-btn bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-4 rounded-lg shadow-sm">▶</button>
+                            <div></div>
+                            <button data-cmd="S" class="pad-btn bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold py-4 rounded-lg shadow-sm">▼</button>
+                            <div></div>
+                        </div>
+                        <div class="flex items-center gap-2 mt-4">
+                            <label class="text-xs text-slate-500 w-12">Hız</label>
+                            <input id="spd" type="range" min="60" max="255" value="180" class="flex-1" />
+                            <span id="spd-val" class="text-sm font-bold w-10 text-right">180</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 mt-3">
+                            <button data-cmd="L" data-arm="UP" class="pad-btn bg-amber-500 hover:bg-amber-600 text-white font-semibold py-2 rounded-lg">⬆ Kol Yukarı</button>
+                            <button data-cmd="K" data-arm="DOWN" class="pad-btn bg-amber-700 hover:bg-amber-800 text-white font-semibold py-2 rounded-lg">⬇ Kol Aşağı</button>
+                        </div>
+                        <p class="text-[11px] text-slate-400 mt-3" id="cmd-status">komut bekleniyor…</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sağ: RANSAC Konum Çizimi -->
+            <section class="lg:col-span-4" id="plot-section">
+                <div class="card overflow-hidden">
+                    <div class="card-header">
+                        <i class="fa-solid fa-fire text-[#FF6B35]"></i>
+                        Yangın Konumu ve Çizim
+                    </div>
+                    <div class="p-3">
+                        <img id="plot" class="w-full rounded-lg" alt="RANSAC konum çizimi" />
+                    </div>
+                    <div class="px-4 py-3 text-xs text-slate-500 border-t border-slate-100 flex items-center gap-2">
+                        <i class="fa-solid fa-chart-line"></i>
+                        Çoklu kareden gelen tespit vektörlerinin RANSAC ile filtrelenmiş ortak kesişim noktası.
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="hero-gradient text-blue-100 mt-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-3">
+            <div class="text-white font-bold flex items-center gap-2">
+                <i class="fa-solid fa-robot"></i> OYTS Projesi <span class="font-normal text-sm text-blue-300 ml-2">© 2026</span>
+            </div>
+            <div class="text-sm">
+                Piri Reis Üniversitesi • BIP 2012 • Sema Nur Işık &amp; Efe Düzçay
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══ JS ═══ -->
+    <script>
+    (function () {
+        const DEFAULT_BACKEND = "http://127.0.0.1:5050";
+        const KEY = "oyts.backend";
+
+        // --- Backend URL ---------------------------------------------------
+        function backendUrl() {
+            return (localStorage.getItem(KEY) || DEFAULT_BACKEND).replace(/\/$/, "");
+        }
+        const $ = (id) => document.getElementById(id);
+
+        function setBackendDisplay() {
+            $("backend-display").textContent = backendUrl();
+            $("backend-input").value = backendUrl();
+        }
+
+        function setConn(state) {
+            const pill = $("conn-pill");
+            pill.classList.remove("badge-on", "badge-off", "badge-wait");
+            if (state === "ok")        { pill.classList.add("badge-on");
+                                         pill.innerHTML = '<span class="pill-dot bg-green-500"></span> backend bağlı'; }
+            else if (state === "stop") { pill.classList.add("badge-wait");
+                                         pill.innerHTML = '<span class="pill-dot bg-yellow-500"></span> duraklatıldı'; }
+            else                       { pill.classList.add("badge-off");
+                                         pill.innerHTML = '<span class="pill-dot bg-red-500"></span> backend kapalı'; }
+        }
+
+        // --- /config: conf threshold, imgsz, kaynak listesi --------------
+        let CFG = { conf_threshold: 0.20, imgsz: 640, heat_threshold: 60,
+                    voltage_nominal: 11.1, voltage_min: 9.6 };
+        async function loadConfig() {
+            try {
+                const r = await fetch(backendUrl() + "/config", { cache: "no-store" });
+                if (!r.ok) return;
+                const c = await r.json();
+                CFG = Object.assign(CFG, c);
+                // Conf tick'i güncelle
+                const pct = Math.round((CFG.conf_threshold || 0) * 100);
+                $("s-conf-tick").style.left = pct + "%";
+                $("s-conf-tick-label").textContent = (CFG.conf_threshold || 0).toFixed(2) + " ↑";
+                $("conf-th-disp").textContent = (CFG.conf_threshold || 0).toFixed(2);
+                $("imgsz-disp").textContent = CFG.imgsz || "—";
+                if (c.source) { setActiveChip(c.source); updateSrcPill(c.source); }
+                // Model rozeti — header altında
+                const modelBadge = $("model-badge");
+                if (modelBadge && c.model_path) {
+                    const short = c.model_path.replace(/^.*\//, '').replace('.pt', '');
+                    modelBadge.textContent = "model: " + short;
+                }
+            } catch (e) { /* sessiz */ }
+        }
+
+        function updateSrcPill(src) {
+            const p = $("src-pill");
+            p.textContent = (src || "—").toUpperCase();
+            if (src === "esp32")          p.style.cssText = "background:#fef3c7;color:#92400e";
+            else if (src === "synthetic") p.style.cssText = "background:#dcfce7;color:#166534";
+            else                          p.style.cssText = "background:#dbeafe;color:#1d4ed8";
+        }
+
+        // --- /state polling -----------------------------------------------
+        function applyState(s) {
+            $("s-angle").textContent = (s.angle_deg ?? 0).toFixed(1);
+            $("s-time").textContent  = (s.system_time_ms ?? 0).toLocaleString();
+
+            const fps = s.fps ?? 0;
+            const fpsCls = fps >= 10 ? "fps-good" : (fps >= 5 ? "fps-mid" : "fps-bad");
+            $("s-fps").innerHTML = `<span class="fps-badge ${fpsCls}">${fps.toFixed(1)}</span>`;
+
+            $("s-stable").textContent = s.n_targets ?? 0;
+            $("s-raw").textContent    = s.raw_count ?? 0;
+            const conf = s.raw_max_conf ?? 0;
+            $("s-conf").textContent   = conf.toFixed(2);
+            $("s-conf-fill").style.width = `${Math.min(100, conf * 100)}%`;
+            $("s-priority").textContent = (s.primary_priority ?? 0).toFixed(2);
+            const dist = s.primary_distance_m ?? 0;
+            $("s-distance").textContent = dist > 0 ? (dist.toFixed(2) + " m") : "—";
+            const hm = s.heatmap_max ?? 0;
+            $("s-hmap").textContent = (hm * 100).toFixed(0) + "%";
+            $("s-hmap-fill").style.width = Math.min(100, hm * 100) + "%";
+
+            // Telemetri — ısı
+            const heat = s.heat_c ?? 25;
+            $("s-heat").textContent = heat.toFixed(1) + " °C";
+            const hpct = Math.max(0, Math.min(100, (heat / CFG.heat_threshold) * 100));
+            $("s-heat-fill").style.width = hpct + "%";
+            // Telemetri — voltaj
+            const v = s.voltage ?? 0;
+            if (v > 0.5) {
+                $("s-volt").textContent = v.toFixed(2) + " V";
+                const span = (CFG.voltage_nominal + 1.0) - CFG.voltage_min;
+                const vpct = Math.max(0, Math.min(100, ((v - CFG.voltage_min) / span) * 100));
+                $("s-volt-fill").style.width = vpct + "%";
+            } else {
+                $("s-volt").textContent = "N/A";
+                $("s-volt-fill").style.width = "0%";
+            }
+
+            // Conf threshold runtime'da değiştiyse (config döndüğünde de)
+            if (s.conf_threshold && Math.abs(s.conf_threshold - CFG.conf_threshold) > 0.001) {
+                CFG.conf_threshold = s.conf_threshold;
+                const pct = Math.round(s.conf_threshold * 100);
+                $("s-conf-tick").style.left = pct + "%";
+                $("s-conf-tick-label").textContent = s.conf_threshold.toFixed(2) + " ↑";
+                $("conf-th-disp").textContent = s.conf_threshold.toFixed(2);
+            }
+
+            // Sınıf dağılımı
+            const cls = s.classes || {};
+            const wrap = $("s-classes");
+            const keys = Object.keys(cls);
+            if (keys.length === 0) {
+                wrap.innerHTML = '<span class="text-xs text-slate-400 italic">tespit yok</span>';
+            } else {
+                wrap.innerHTML = keys.map(k => {
+                    const [n, c] = cls[k];
+                    const safe = ["fire","default","smoke"].includes(k) ? k : "";
+                    return `<span class="cls-chip ${safe}" title="bu sınıftan ${n} tespit">
+                              <span class="dot"></span>${k} · ${c.toFixed(2)} <span class="opacity-60">(${n})</span>
+                            </span>`;
+                }).join("");
+            }
+
+            // Yangın pill — stable iken hafif flash animasyonu
+            const fireOn = (s.stable_fire !== undefined) ? s.stable_fire : s.fire_detected;
+            const fire = $("s-fire");
+            if (fireOn) {
+                fire.innerHTML = '<span class="pill fire-alert" style="color:#991b1b;">🔥 Yangın Tespit Edildi!</span>';
+            } else if (s.fire_detected) {
+                fire.innerHTML = '<span class="pill badge-wait">⚡ Anlık sinyal</span>';
+            } else if (s.running) {
+                fire.innerHTML = '<span class="pill badge-wait">⏳ Aranıyor…</span>';
+            } else {
+                fire.innerHTML = '<span class="pill" style="background:#e2e8f0;color:#475569;">— Durduruldu —</span>';
+            }
+            $("rec-dot").classList.toggle("hidden", !s.running);
+
+            // Mesafe rengi — yakın hedef tehlike rengi
+            const dEl = $("s-distance");
+            if (dist > 0 && dist < 1.0)      dEl.style.color = '#dc2626';
+            else if (dist > 0 && dist < 2.0) dEl.style.color = '#ea580c';
+            else                              dEl.style.color = '';
+
+            if (s.source) updateSrcPill(s.source);
+        }
+
+        async function pollState() {
+            try {
+                const r = await fetch(backendUrl() + "/state", { cache: "no-store" });
+                if (!r.ok) throw new Error(r.statusText);
+                const s = await r.json();
+                applyState(s);
+                setConn(s.running ? "ok" : "stop");
+            } catch (e) {
+                setConn("off");
+            }
+        }
+
+        function refreshPlot() {
+            $("plot").src = backendUrl() + "/plot.png?t=" + Date.now();
+        }
+
+        function setCamSrc() {
+            $("cam").src = backendUrl() + "/video_feed";
+        }
+
+        async function postAction(path, body) {
+            try {
+                const opts = { method: "POST" };
+                if (body) {
+                    opts.headers = { "Content-Type": "application/json" };
+                    opts.body = JSON.stringify(body);
+                }
+                const r = await fetch(backendUrl() + path, opts);
+                await pollState();
+                return await r.json().catch(() => ({}));
+            } catch (e) {
+                $("cmd-status").textContent = "⚠ backend'e ulaşılamadı: " + backendUrl();
+                return null;
+            }
+        }
+
+        // --- Start / Stop / Snapshot --------------------------------------
+        $("btn-start").addEventListener("click", () => postAction("/start"));
+        $("btn-stop").addEventListener("click",  () => postAction("/stop"));
+        $("btn-snapshot").addEventListener("click", () => {
+            // /snapshot tek-kare jpeg döner; tarayıcıya indirir
+            const a = document.createElement("a");
+            a.href = backendUrl() + "/snapshot?t=" + Date.now();
+            a.download = "oyts_snapshot.jpg";
+            document.body.appendChild(a); a.click(); a.remove();
+        });
+
+        // --- Backend Save --------------------------------------------------
+        $("backend-save").addEventListener("click", () => {
+            const v = $("backend-input").value.trim();
+            if (v) localStorage.setItem(KEY, v);
+            setBackendDisplay();
+            setCamSrc();
+            refreshPlot();
+            loadConfig();
+            pollState();
+        });
+
+        // --- Kaynak değiştirme (chip toggle) ------------------------------
+        function setActiveChip(src) {
+            document.querySelectorAll(".src-chip").forEach(b => {
+                b.classList.toggle("active", b.dataset.src === src);
+            });
+            $("source-sel").value = src;
+        }
+        document.querySelectorAll(".src-chip").forEach(btn => {
+            btn.addEventListener("click", async () => {
+                const src = btn.dataset.src;
+                // Devre dışı (donanım eksik) ise yoksay
+                if (btn.disabled || btn.hasAttribute("aria-disabled") && btn.getAttribute("aria-disabled") === "true") return;
+                // Zaten aktifse yoksay
+                if (btn.classList.contains("active")) return;
+                // Loading hali
+                document.querySelectorAll(".src-chip").forEach(b => b.classList.add("loading"));
+                const r = await postAction("/source", { source: src });
+                document.querySelectorAll(".src-chip").forEach(b => b.classList.remove("loading"));
+                if (r && r.ok) {
+                    setActiveChip(src);
+                    updateSrcPill(src);
+                    // Stream URL aynı ama içeriği değişti — yeniden bağla
+                    setCamSrc();
+                    refreshPlot();
+                }
+            });
+        });
+
+        // --- Manuel sürüş (touch + click) ---------------------------------
+        function sendDrive(cmd, arm = "") {
+            const spd = parseInt($("spd").value, 10) || 180;
+            $("cmd-status").textContent = `→ ${cmd}${arm ? " arm=" + arm : ""} spd=${spd}`;
+            return postAction("/command", { cmd, spd, arm });
+        }
+        document.querySelectorAll(".pad-btn").forEach(btn => {
+            const cmd = btn.dataset.cmd;
+            const arm = btn.dataset.arm || "";
+            btn.addEventListener("click", () => sendDrive(cmd, arm));
+        });
+        $("spd").addEventListener("input", () => {
+            $("spd-val").textContent = $("spd").value;
+        });
+
+        // Klavye: W A S D X K L
+        const KEYMAP = {
+            "w": "W", "a": "A", "s": "S", "d": "D", "x": "X",
+            "k": "K", "l": "L"
+        };
+        const keyHeld = new Set();
+        document.addEventListener("keydown", e => {
+            if (e.repeat) return;
+            const tag = (document.activeElement?.tagName || "").toUpperCase();
+            if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") return;
+            const k = e.key.toLowerCase();
+            if (KEYMAP[k]) {
+                if (keyHeld.has(k)) return;
+                keyHeld.add(k);
+                sendDrive(KEYMAP[k]);
+            }
+        });
+        document.addEventListener("keyup", e => {
+            const k = e.key.toLowerCase();
+            if (KEYMAP[k]) {
+                keyHeld.delete(k);
+                // Yön tuşları bırakıldığında STOP (kol komutları hariç)
+                if (["w","a","s","d"].includes(k)) sendDrive("X");
+            }
+        });
+
+        // init
+        setBackendDisplay();
+        setCamSrc();
+        refreshPlot();
+        loadConfig();
+        pollState();
+        setInterval(pollState, 250);
+        setInterval(refreshPlot, 1500);
+    })();
+    </script>
+</body>
+</html>

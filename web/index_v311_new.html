@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OYTS — Otonom Yangın Tespit Sistemi | Piri Reis Üniversitesi</title>
+    <meta name="description" content="YOLOv8, Bulanık Mantık ve Simulated Annealing tabanlı otonom yangın tespit robotu. Piri Reis Üniversitesi BIP 2012 projesi.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFF; color: #1a202c; }
+        .hero-gradient { background: linear-gradient(135deg, #001f4d 0%, #0047AB 50%, #1e3a8a 100%); }
+        .text-accent { color: #FF6B35; }
+        .bg-accent { background-color: #FF6B35; }
+        .card { background: white; border-radius: 1rem; box-shadow: 0 4px 6px rgba(0,0,0,.04), 0 1px 3px rgba(0,0,0,.06); transition: transform .2s ease, box-shadow .2s ease; }
+        .card:hover { transform: translateY(-2px); box-shadow: 0 10px 15px rgba(0,0,0,.08), 0 4px 6px rgba(0,0,0,.04); }
+        .section-eyebrow { font-size:.85rem; font-weight:700; color:#FF6B35; letter-spacing:.08em; text-transform:uppercase; }
+        .section-title { font-size: 2.25rem; font-weight: 800; color:#0f172a; letter-spacing:-0.02em; line-height:1.15; }
+        @media (min-width: 1024px){ .section-title { font-size: 3rem; } }
+        .nav-link { position:relative; }
+        .nav-link::after {
+            content:''; position:absolute; left:0; bottom:-4px; height:2px; width:0;
+            background:#FF6B35; transition: width .2s ease;
+        }
+        .nav-link:hover::after, .nav-link.active::after { width:100%; }
+        .feature-icon {
+            width:48px; height:48px; border-radius:.85rem;
+            display:flex; align-items:center; justify-content:center;
+            background:linear-gradient(135deg, #FF6B35 0%, #f59e0b 100%);
+            color:#fff; font-size:1.2rem;
+            box-shadow: 0 6px 12px rgba(255,107,53,.25);
+        }
+        @keyframes pulse-ring {
+            0%   { box-shadow: 0 0 0 0 rgba(255,107,53,.55); }
+            70%  { box-shadow: 0 0 0 14px rgba(255,107,53,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,107,53,0); }
+        }
+        .animate-pulse-ring { animation: pulse-ring 2s infinite; }
+        .stat-card { background:rgba(255,255,255,.08); backdrop-filter: blur(8px); border:1px solid rgba(255,255,255,.15); border-radius:1rem; padding:1.25rem; }
+        .step-num {
+            width:36px; height:36px; border-radius:50%;
+            display:inline-flex; align-items:center; justify-content:center;
+            background:#0047AB; color:#fff; font-weight:800;
+            box-shadow: 0 4px 8px rgba(0,71,171,.25);
+        }
+        .gallery-img { width:100%; aspect-ratio: 16/9; object-fit:cover; border-radius:.75rem; transition: transform .25s ease; }
+        .gallery-card:hover .gallery-img { transform: scale(1.02); }
+        .badge {
+            display:inline-flex; align-items:center; gap:.3rem;
+            padding:.25rem .65rem; border-radius:9999px;
+            font-size:.72rem; font-weight:700; letter-spacing:.02em;
+        }
+        .tech-pill {
+            display:inline-flex; align-items:center; gap:.4rem;
+            padding:.4rem .8rem; border-radius:9999px;
+            background:#f1f5f9; color:#0f172a;
+            font-size:.78rem; font-weight:600;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- ═══ Navigation ═══ -->
+    <nav class="fixed w-full z-50 py-3 bg-white/95 backdrop-blur-md shadow-sm border-b border-slate-100">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-12">
+                <a href="index.html" class="flex items-center gap-3">
+                    <i class="fa-solid fa-robot text-2xl text-[#0047AB]"></i>
+                    <span class="font-bold text-xl text-[#0047AB] tracking-tight">OYTS <span class="text-xs font-normal opacity-70 ml-2 hidden sm:inline">Piri Reis Üni.</span></span>
+                </a>
+                <div class="hidden lg:flex space-x-7 text-sm font-medium">
+                    <a href="#problem"        class="nav-link text-gray-600 hover:text-[#0047AB]">Sorun</a>
+                    <a href="#cozum"          class="nav-link text-gray-600 hover:text-[#0047AB]">Çözüm</a>
+                    <a href="#nasil-calisir"  class="nav-link text-gray-600 hover:text-[#0047AB]">Nasıl Çalışır?</a>
+                    <a href="#mimari"         class="nav-link text-gray-600 hover:text-[#0047AB]">Mimari</a>
+                    <a href="#galeri"         class="nav-link text-gray-600 hover:text-[#0047AB]">Galeri</a>
+                    <a href="live.html"        class="nav-link text-[#FF6B35] font-bold">🔥 Canlı Demo</a>
+                </div>
+                <a href="live.html" class="lg:hidden bg-accent text-white font-semibold px-3 py-1.5 rounded-lg text-sm">Demo →</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ═══ Hero ═══ -->
+    <section class="hero-gradient pt-32 pb-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto grid lg:grid-cols-2 gap-12 items-center">
+            <div>
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-5 text-sm font-medium text-white">
+                    <span class="w-2 h-2 rounded-full bg-accent animate-pulse-ring"></span>
+                    v3.1.1 · Haziran 2026
+                </div>
+                <h1 class="text-4xl lg:text-6xl font-extrabold tracking-tight text-white leading-tight">
+                    Yangını <span class="text-accent">duyma</span><br>
+                    <span class="text-accent">gör</span> ve müdahale et.
+                </h1>
+                <p class="text-blue-100 mt-6 text-lg max-w-xl leading-relaxed">
+                    YOLOv8 derin öğrenme, Bulanık Mantık önceliklendirme ve
+                    Simulated Annealing rota optimizasyonu ile otonom çalışan,
+                    gerçek zamanlı yangın tespit ve müdahale robotu.
+                </p>
+                <div class="mt-8 flex flex-wrap gap-3">
+                    <a href="live.html" class="bg-accent hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl flex items-center gap-2 transition shadow-lg shadow-orange-500/30">
+                        <i class="fa-solid fa-play"></i> Canlı Demoyu Aç
+                    </a>
+                    <a href="#nasil-calisir" class="bg-white/10 hover:bg-white/20 text-white font-semibold px-6 py-3 rounded-xl flex items-center gap-2 border border-white/20 transition">
+                        Nasıl Çalışır? <i class="fa-solid fa-arrow-down text-xs"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Hero side card with stats -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="stat-card">
+                    <div class="text-accent text-3xl font-extrabold">0.93</div>
+                    <div class="text-blue-100 text-sm mt-1">mAP50 (sentetik)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-accent text-3xl font-extrabold">0.60</div>
+                    <div class="text-blue-100 text-sm mt-1">mAP50 (gerçek)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-accent text-3xl font-extrabold">3</div>
+                    <div class="text-blue-100 text-sm mt-1">Katman (ESP32+Mega+PC)</div>
+                </div>
+                <div class="stat-card">
+                    <div class="text-accent text-3xl font-extrabold">50</div>
+                    <div class="text-blue-100 text-sm mt-1">Pytest baseline</div>
+                </div>
+                <div class="col-span-2 stat-card flex items-center justify-between">
+                    <div>
+                        <div class="text-white font-bold">Çoklu kaynak</div>
+                        <div class="text-blue-100 text-xs mt-1">Webcam · ESP32-CAM · Sentetik</div>
+                    </div>
+                    <i class="fa-solid fa-cube text-accent text-3xl"></i>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Problem ═══ -->
+    <section id="problem" class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="section-eyebrow mb-3">Sorun</div>
+                <h2 class="section-title">Yangın geç fark edilirse, müdahale geç olur.</h2>
+                <p class="text-slate-600 mt-5 text-lg">
+                    Klasik duman dedektörleri yangının ilerlemiş aşamasını yakalar.
+                    Erken evrede alev veya kıvılcımı <strong>görerek</strong> tespit edebilen
+                    sistemler ise insana bağımlı: sürekli ekran izleyen biri gerek.
+                </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="card p-6">
+                    <div class="feature-icon mb-4"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                    <h3 class="font-bold text-lg">Geç tespit</h3>
+                    <p class="text-slate-600 text-sm mt-2">Duman dedektörü alev sahneye çıktıktan sonra tetiklenir. Yangın yayılmış olur.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="feature-icon mb-4"><i class="fa-solid fa-user-clock"></i></div>
+                    <h3 class="font-bold text-lg">İnsan bağımlılığı</h3>
+                    <p class="text-slate-600 text-sm mt-2">Kamera sistemi varsa bile gece/mesai dışında izleyen olmaz.</p>
+                </div>
+                <div class="card p-6">
+                    <div class="feature-icon mb-4"><i class="fa-solid fa-map-location-dot"></i></div>
+                    <h3 class="font-bold text-lg">Sabit nokta körlüğü</h3>
+                    <p class="text-slate-600 text-sm mt-2">Sabit kameralar açı dışını göremez. Hareketli bir göz lazım.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Çözüm ═══ -->
+    <section id="cozum" class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-b from-slate-50 to-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <div class="section-eyebrow mb-3">Çözümümüz</div>
+                <h2 class="section-title">Yangını gören, koşan, müdahale eden robot.</h2>
+                <p class="text-slate-600 mt-5 text-lg">
+                    OYTS, üç katmanlı bir gömülü sistemdir: göz, beyin, kaslar.
+                    Hepsi tek bir hedef için: <span class="font-bold text-accent">alev daha küçükken durdur</span>.
+                </p>
+            </div>
+
+            <div class="grid lg:grid-cols-3 gap-6">
+                <!-- Layer 1: ESP32 -->
+                <div class="card p-7 relative opacity-90">
+                    <div class="absolute -top-3 right-5 badge bg-red-100 text-red-700 border border-red-200">
+                        <i class="fa-solid fa-circle-exclamation"></i> Şu an aktif değil
+                    </div>
+                    <div class="badge bg-blue-100 text-blue-700 mb-3"><i class="fa-solid fa-eye"></i> Göz</div>
+                    <h3 class="font-bold text-xl mb-2">ESP32-CAM</h3>
+                    <p class="text-slate-600 text-sm mb-4">Wi-Fi MJPEG akış, dinamik çözünürlük, JSON telemetri. Robot üstünde 30 fps canlı yayın.</p>
+                    <ul class="text-sm text-slate-700 space-y-2">
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> QVGA → UXGA runtime'da değişir</li>
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> WiFi auto-reconnect, frame fail watchdog</li>
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> CORS uyumlu, doğrudan tarayıcıdan izlenebilir</li>
+                    </ul>
+                    <p class="text-xs text-slate-500 mt-4 italic border-t border-slate-200 pt-3">
+                        Donanım eksikliği nedeniyle bu sürümde devre dışı. Yerine
+                        <strong>webcam</strong> veya <strong>sentetik</strong> kaynak kullanılır.
+                    </p>
+                </div>
+
+                <!-- Layer 2: Mega -->
+                <div class="card p-7 ring-2 ring-accent/30 relative">
+                    <div class="absolute -top-3 right-5 badge bg-accent text-white">Çekirdek</div>
+                    <div class="badge bg-amber-100 text-amber-700 mb-3"><i class="fa-solid fa-microchip"></i> Beyin · Kas</div>
+                    <h3 class="font-bold text-xl mb-2">Arduino Mega 2560</h3>
+                    <p class="text-slate-600 text-sm mb-4">Motor sürücüsü + servo kolu + voltaj izleme + yangın alarm LED/buzzer.</p>
+                    <ul class="text-sm text-slate-700 space-y-2">
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> L298N H-bridge ile 4WD PWM</li>
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Non-blocking servo sweep + STATUS heartbeat</li>
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Komut zaman aşımı → güvenli durdurma</li>
+                    </ul>
+                </div>
+
+                <!-- Layer 3: PC -->
+                <div class="card p-7">
+                    <div class="badge bg-purple-100 text-purple-700 mb-3"><i class="fa-solid fa-brain"></i> Karar</div>
+                    <h3 class="font-bold text-xl mb-2">PC (Python + YOLOv8)</h3>
+                    <p class="text-slate-600 text-sm mb-4">Tespit, takip, önceliklendirme ve rota optimizasyonu — hepsi gerçek zamanlı.</p>
+                    <ul class="text-sm text-slate-700 space-y-2">
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> YOLOv8s, IoU multi-target tracker</li>
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Bulanık Mantık öncelik · SA rota</li>
+                        <li class="flex gap-2"><i class="fa-solid fa-check text-green-500 mt-1"></i> Multi-signal validator (false positive eler)</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Nasıl Çalışır ═══ -->
+    <section id="nasil-calisir" class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-14">
+                <div class="section-eyebrow mb-3">Nasıl Çalışır?</div>
+                <h2 class="section-title">5 adımda görmekten müdahale etmeye.</h2>
+            </div>
+
+            <div class="space-y-6">
+                <div class="card p-6 flex gap-5 items-start">
+                    <span class="step-num shrink-0">1</span>
+                    <div>
+                        <h3 class="font-bold text-lg">Algılama (YOLOv8)</h3>
+                        <p class="text-slate-600 text-sm mt-1">Görüntü kaynağı (webcam, sentetik veya tasarlanan ESP32-CAM Wi-Fi akışı) her karede YOLOv8 modeline beslenir; alev/duman bbox'ları çıkartılır. v3.1.1 ile model gerçek+sentetik karışık eğitildi (mAP50 0.93/0.60). <span class="text-red-600 text-xs">(ESP32-CAM şu an donanım eksikliği nedeniyle pasif.)</span></p>
+                    </div>
+                </div>
+                <div class="card p-6 flex gap-5 items-start">
+                    <span class="step-num shrink-0">2</span>
+                    <div>
+                        <h3 class="font-bold text-lg">Doğrulama (Multi-signal Validator)</h3>
+                        <p class="text-slate-600 text-sm mt-1">Tespitler 4 fiziksel imzaya bakılır: <strong>parlak çekirdek</strong> (V≥245), <strong>temporal varyans</strong> (alev titrer), <strong>motion</strong> (statik foto 0), <strong>saturasyon profili</strong> (ten elenir). Kırmızı duvar veya cilt geçemez.</p>
+                    </div>
+                </div>
+                <div class="card p-6 flex gap-5 items-start">
+                    <span class="step-num shrink-0">3</span>
+                    <div>
+                        <h3 class="font-bold text-lg">Takip (IoU Multi-target Tracker)</h3>
+                        <p class="text-slate-600 text-sm mt-1">Her bbox'a kalıcı ID atanır. Stable hedefler kararlılaşır, FSM titremesi sıfırlanır. Kısa kayıplarda grace frame devreye girer.</p>
+                    </div>
+                </div>
+                <div class="card p-6 flex gap-5 items-start">
+                    <span class="step-num shrink-0">4</span>
+                    <div>
+                        <h3 class="font-bold text-lg">Önceliklendirme (Bulanık Mantık)</h3>
+                        <p class="text-slate-600 text-sm mt-1">Her hedef piksel alanına göre trapezoidal üyelik fonksiyonlarıyla SMALL/MEDIUM/LARGE/HUGE sınıflarına eşlenir. Mamdani çıkarsama ile 0..1 öncelik skoru. Smoke fire'dan düşük katsayı alır.</p>
+                    </div>
+                </div>
+                <div class="card p-6 flex gap-5 items-start">
+                    <span class="step-num shrink-0">5</span>
+                    <div>
+                        <h3 class="font-bold text-lg">Rota & Müdahale (Simulated Annealing)</h3>
+                        <p class="text-slate-600 text-sm mt-1">Birden fazla yangın varsa SA ile en kısa ziyaret sırası hesaplanır. Sonra durum makinesi (SEARCHING → APPROACHING → TOO_CLOSE → HEAT_ACTION) Arduino'ya motor + alarm komutu gönderir.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tech stack pills -->
+            <div class="mt-12 text-center">
+                <div class="text-sm font-semibold text-slate-500 mb-4">Kullanılan Teknolojiler</div>
+                <div class="flex flex-wrap justify-center gap-2">
+                    <span class="tech-pill"><i class="fa-brands fa-python"></i> Python 3.10</span>
+                    <span class="tech-pill">🔥 YOLOv8 / Ultralytics</span>
+                    <span class="tech-pill"><i class="fa-solid fa-brain"></i> PyTorch / MPS</span>
+                    <span class="tech-pill"><i class="fa-solid fa-eye"></i> OpenCV</span>
+                    <span class="tech-pill"><i class="fa-solid fa-flask"></i> Flask</span>
+                    <span class="tech-pill"><i class="fa-solid fa-microchip"></i> Arduino C++</span>
+                    <span class="tech-pill opacity-60" title="Donanım eksikliği nedeniyle bu sürümde pasif">
+                        <i class="fa-solid fa-wifi"></i> ESP32 + WebServer
+                        <span class="text-[9px] bg-red-100 text-red-700 px-1 rounded ml-1">pasif</span>
+                    </span>
+                    <span class="tech-pill"><i class="fa-brands fa-html5"></i> Tailwind CSS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Mimari ═══ -->
+    <section id="mimari" class="py-20 px-4 sm:px-6 lg:px-8 bg-slate-900 text-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="section-eyebrow mb-3" style="color:#fb923c;">Mimari</div>
+                <h2 class="section-title text-white">Üç katman, üç sorumluluk.</h2>
+                <p class="text-slate-300 mt-5 text-lg">
+                    Veri akışı tek yönlü değil — her katman diğeriyle <strong>gerçek zamanlı protokollerle</strong> konuşur.
+                </p>
+            </div>
+
+            <div class="bg-slate-800 rounded-2xl p-6 lg:p-10 border border-slate-700 overflow-x-auto">
+                <pre class="text-xs lg:text-sm text-slate-200 font-mono leading-relaxed">
+┌──────────────────────────────────────────────────────────────────────┐
+│                        PC (Python 3.10+)                              │
+│  ┌──────────┐  ┌─────────────┐  ┌──────────┐  ┌──────────────┐       │
+│  │ YOLOv8   │─▶│ IoU Tracker │─▶│ Fuzzy    │─▶│ Simulated    │       │
+│  │ Detector │  │ (grace 10)  │  │ Priority │  │ Annealing    │       │
+│  └────┬─────┘  └─────────────┘  └──────────┘  └──────┬───────┘       │
+│       │                                              │                │
+│       ▲ MJPEG (Wi-Fi)            ┌──────────────────┘                │
+│       │                          ▼                                    │
+│       │  ┌──────────────────┐ Decision FSM:                          │
+│       └──┤ Multi-Validator  │ SEARCHING→APPROACHING→TOO_CLOSE        │
+│          │ • bright_core    │ +HEAT_ACTION                            │
+│          │ • temporal       │                                         │
+│          │ • motion         │                                         │
+│          │ • saturation     │                                         │
+│          └──────────────────┘                                         │
+│                                            │ USB Serial 115200        │
+└────────────────────────────────────────────┼──────────────────────────┘
+                                             ▼
+            ┌───────────────────┐         ┌──────────────────────┐
+            │   ESP32-CAM       │ Wi-Fi   │  Arduino Mega 2560   │
+            │   MJPEG Stream    │ ←──────→│  L298N + 4WD + Servo │
+            │   /telemetry      │         │  Voltaj izleme       │
+            │   /resolution     │         │  Fire LED + Buzzer   │
+            └───────────────────┘         └──────────────────────┘</pre>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-6 mt-10">
+                <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+                    <div class="text-accent font-bold mb-1">PC ↔ Arduino</div>
+                    <div class="text-slate-300 text-sm font-mono">CMD:FORWARD;SPD:180;ARM:DOWN<br>FIRE:ON · QUERY:STATUS<br>STATUS:state=...heartbeat</div>
+                </div>
+                <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+                    <div class="text-accent font-bold mb-1">PC ↔ ESP32</div>
+                    <div class="text-slate-300 text-sm font-mono">GET /stream → MJPEG<br>GET /telemetry → JSON<br>GET /resolution?value=hd</div>
+                </div>
+                <div class="bg-slate-800 rounded-xl p-5 border border-slate-700">
+                    <div class="text-accent font-bold mb-1">UI ↔ Backend</div>
+                    <div class="text-slate-300 text-sm font-mono">GET /state · /video_feed<br>POST /command · /source<br>GET /snapshot · /plot.png</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Galeri ═══ -->
+    <section id="galeri" class="py-20 px-4 sm:px-6 lg:px-8 bg-white">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center max-w-3xl mx-auto mb-12">
+                <div class="section-eyebrow mb-3">Galeri</div>
+                <h2 class="section-title">Sistem çalışırken.</h2>
+                <p class="text-slate-600 mt-5 text-lg">
+                    Sentetik sahne üzerinde gerçek zamanlı tespit + heatmap overlay.
+                </p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-5">
+                <div class="gallery-card overflow-hidden card p-3">
+                    <img class="gallery-img" src="screenshots/demo_synthetic_1.jpg" alt="Demo 1" onerror="this.style.display='none'">
+                    <div class="p-3">
+                        <div class="font-bold text-sm">Çoklu hedef tespiti</div>
+                        <div class="text-xs text-slate-500 mt-1">2 fire bbox + heatmap halo + FIRE etiketi</div>
+                    </div>
+                </div>
+                <div class="gallery-card overflow-hidden card p-3">
+                    <img class="gallery-img" src="screenshots/demo_synthetic_2.jpg" alt="Demo 2" onerror="this.style.display='none'">
+                    <div class="p-3">
+                        <div class="font-bold text-sm">Yakın hedef + risk yoğunluğu</div>
+                        <div class="text-xs text-slate-500 mt-1">Mesafe < 1m → kırmızı uyarı, heatmap %78</div>
+                    </div>
+                </div>
+                <div class="gallery-card overflow-hidden card p-3">
+                    <img class="gallery-img" src="screenshots/demo_synthetic_3.jpg" alt="Demo 3" onerror="this.style.display='none'">
+                    <div class="p-3">
+                        <div class="font-bold text-sm">Primary + secondary track</div>
+                        <div class="text-xs text-slate-500 mt-1">Kırmızı = en yüksek öncelik, turuncu = #2</div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-10">
+                <a href="live.html" class="inline-flex bg-accent hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl items-center gap-2 transition shadow-lg shadow-orange-500/30">
+                    Sistemi şimdi gör <i class="fa-solid fa-arrow-right"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ CTA Banner ═══ -->
+    <section class="hero-gradient py-20 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-4xl mx-auto text-center">
+            <h2 class="text-3xl lg:text-4xl font-extrabold text-white">
+                Donanım gerekmez. Tek komutla canlı demo.
+            </h2>
+            <p class="text-blue-100 mt-4 text-lg">
+                Sentetik sahne sayesinde robot, kamera veya alev olmadan da
+                sistemi <strong>uçtan uca</strong> görebilirsin.
+            </p>
+            <div class="mt-8 inline-block bg-black/30 rounded-xl p-4 font-mono text-left text-sm text-green-300">
+                <span class="text-slate-400">$</span> git clone &lt;repo&gt;<br>
+                <span class="text-slate-400">$</span> cd robot-3.0.0<br>
+                <span class="text-slate-400">$</span> ./run_demo.sh
+            </div>
+            <div class="mt-6">
+                <a href="live.html" class="inline-flex bg-accent hover:bg-orange-600 text-white font-bold px-8 py-3 rounded-xl items-center gap-2 transition shadow-lg shadow-orange-500/30">
+                    <i class="fa-solid fa-play"></i> Canlı Demoyu Aç
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ Footer ═══ -->
+    <footer class="bg-slate-900 text-slate-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <div class="grid md:grid-cols-4 gap-8">
+                <div class="md:col-span-2">
+                    <div class="flex items-center gap-2 text-white font-bold text-xl">
+                        <i class="fa-solid fa-robot"></i> OYTS
+                    </div>
+                    <p class="text-sm text-slate-400 mt-3 max-w-md">
+                        Otonom Yangın Tespit Sistemi — YOLOv8, Bulanık Mantık ve
+                        Simulated Annealing ile gerçek zamanlı.
+                    </p>
+                    <div class="text-sm text-slate-500 mt-4">
+                        Piri Reis Üniversitesi · BIP 2012<br>
+                        Efe Düzçay &amp; Sema Nur Işık
+                    </div>
+                </div>
+                <div>
+                    <div class="text-white font-bold text-sm mb-3">Bölümler</div>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#problem" class="hover:text-accent">Sorun</a></li>
+                        <li><a href="#cozum" class="hover:text-accent">Çözüm</a></li>
+                        <li><a href="#nasil-calisir" class="hover:text-accent">Nasıl Çalışır?</a></li>
+                        <li><a href="#mimari" class="hover:text-accent">Mimari</a></li>
+                        <li><a href="#galeri" class="hover:text-accent">Galeri</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="text-white font-bold text-sm mb-3">Kaynak</div>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="live.html" class="hover:text-accent">🔥 Canlı Demo</a></li>
+                        <li class="text-slate-500">v3.1.1 · Haziran 2026</li>
+                        <li class="text-slate-500">mAP50: 0.93 / 0.60</li>
+                        <li class="text-slate-500">50 pytest ✓</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-slate-800 mt-10 pt-6 text-center text-xs text-slate-500">
+                © 2026 OYTS Projesi · Akademik kullanım
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Aktif nav linki vurgula (scroll-spy)
+        const sections = ['problem','cozum','nasil-calisir','mimari','galeri'];
+        const navLinks = document.querySelectorAll('.nav-link');
+        function syncNav() {
+            const y = window.scrollY + 100;
+            let active = null;
+            for (const id of sections) {
+                const el = document.getElementById(id);
+                if (el && el.offsetTop <= y) active = id;
+            }
+            navLinks.forEach(a => {
+                a.classList.toggle('active', a.getAttribute('href') === '#' + active);
+            });
+        }
+        window.addEventListener('scroll', syncNav, { passive: true });
+        syncNav();
+    </script>
+</body>
+</html>

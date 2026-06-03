@@ -1,0 +1,57 @@
+# Arduino/ESP32 derleme çıktıları
+build/
+*.elf
+*.hex
+*.bin
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.py[cod]
+.venv/
+venv/
+env/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Modeller (büyük binaryler — Release ile dağıt)
+*.pt
+*.pth
+*.onnx
+*.engine
+*.tflite
+
+# Eğitim çıktıları + veri kümeleri (yüzlerce MB)
+python/runs/
+python/datasets/
+
+# Kayıtlar (video/csv/snapshot)
+kayitlar/
+python/kayitlar/
+
+# Yedekler (cleanup öncesi .bak dosyaları)
+*.bak
+
+# Otomatik üretilen sunum dosyaları (kaynak metin/script repo'da)
+sunum/OYTS_Sunum.pdf
+sunum/OYTS_Sunum.pptx
+
+# Loglar
+*.log
+logs/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+.claude/
+*.swp
+*.swo

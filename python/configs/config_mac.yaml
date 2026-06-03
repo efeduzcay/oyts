@@ -1,0 +1,113 @@
+# ============================================================
+#  Yangın Tespit Robotu — MacBook M-serisi Konfigi
+# ============================================================
+# Kullanım:
+#   python pc_vision_controller.py --config configs/config_mac.yaml
+# ============================================================
+
+# --- Bağlantı ---
+connection:
+  stream_url: "http://192.168.1.25/stream"
+  telemetry_url: "http://192.168.1.25/telemetry"
+  esp32_base_url: "http://192.168.1.25"
+  esp32_framesize: "vga"
+  serial_port: ""
+  baud_rate: 115200
+  telemetry_interval: 0.8
+  reconnect_delay: 2.0
+
+# --- Modlar ---
+mode:
+  simulation: true
+  webcam_index: 0
+  sim_source: "synthetic"
+  sim_video_path: ""
+  use_telemetry_heat: false
+  use_structured_protocol: true
+
+# --- Yapay Zeka (M4 Air ayarları) ---
+ai:
+  # v3.1.1 mixed model (sentetik + gerçek). Eski: fire_model_v3_real.pt
+  model_path: "fire_model_v311_mixed.pt"
+  conf_threshold: 0.40
+  iou_threshold: 0.45
+  imgsz: 480                  # 640 → 480: ~2x daha hızlı inference
+  device: "mps"               # Apple Silicon GPU
+  classes_of_interest:
+    - "fire"
+    - "smoke"
+  smoke_priority_factor: 0.6
+  hsv_refine: false
+  hsv_required: false
+
+# --- Robot Dinamikleri ---
+robot:
+  heat_threshold_c: 60.0
+  speed_far: 200
+  speed_medium: 160
+  speed_close: 120
+  scan_speed: 130
+  # 480'e küçülttüğümüz için alan eşikleri de orantılı (~ /1.78)
+  area_medium: 1700
+  area_close: 5600
+  area_stop: 14000
+  command_smoothing: 3
+  fire_alert_enable: true
+
+# --- Hedef Takibi ---
+tracking:
+  iou_match_threshold: 0.30
+  max_missed_frames: 10
+  min_consecutive_hits: 3
+  stable_grace_frames: 2
+
+# --- Bulanık Mantık (alan eşikleri 480'e göre küçültüldü) ---
+fuzzy:
+  sets:
+    SMALL:  [0,     0,    1100,  1700]
+    MEDIUM: [1100,  1700, 5600,  6700]
+    LARGE:  [5600,  6700, 13500, 15700]
+    HUGE:   [13500, 15700, 33700, 33700]
+  outputs:
+    SMALL: 0.15
+    MEDIUM: 0.45
+    LARGE: 0.78
+    HUGE: 1.00
+
+# --- Simulated Annealing ---
+sa:
+  t_start: 5000.0
+  t_end: 1.0
+  alpha: 0.995
+  max_iter: 3000
+
+# --- Çıktı ---
+output:
+  dir: "kayitlar"
+  video_codec: "XVID"
+  video_fps: 20
+  csv_log: true
+  save_screenshots_on_lock: false
+
+# --- Mesafe ---
+distance:
+  ref_area_px: 3500     # M-serisi imgsz=480 için ölçeklendi
+  ref_distance_m: 1.5
+  use_vertical_bias: true
+  bottom_close_factor: 0.75
+
+# --- Heatmap ---
+heatmap:
+  enabled: true
+  decay: 0.88
+
+# --- Webhook ---
+notify:
+  webhooks: []
+  min_interval_sec: 30
+  include_snapshot_b64: false
+  timeout_sec: 3.0
+
+# --- Sim ---
+sim:
+  passthrough_detections: false   # yeni model sentetiği görebiliyor

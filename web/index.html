@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="tr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OYTS - Otonom Yangın Tespit Sistemi | Piri Reis Üniversitesi</title>
+    <meta name="description" content="Piri Reis Üniversitesi Bilgisayar Programcılığı Bitirme Projesi: Otonom Yangın Tespit Sistemi (OYTS).">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F8FAFF; color: #1a202c; overflow-x: hidden; }
+        .hero-gradient { background: linear-gradient(135deg, #001f4d 0%, #0047AB 100%); }
+        .text-accent { color: #FF6B35; }
+        .bg-accent { background-color: #FF6B35; }
+        
+        .fade-in-up { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease-out, transform 0.8s ease-out; }
+        .fade-in-up.visible { opacity: 1; transform: translateY(0); }
+        
+        .card-hover:hover { transform: translateY(-10px); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        .timeline-line { position: absolute; left: 50%; transform: translateX(-50%); width: 4px; height: 100%; background: #E2E8F0; z-index: 0; }
+        .timeline-point { position: relative; z-index: 10; }
+        @media (max-width: 768px) {
+            .timeline-line { left: 24px; }
+            .timeline-item { text-align: left !important; padding-left: 60px !important; }
+            .timeline-point { left: 0; transform: translateX(0); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+            100% { transform: translateY(0px); }
+        }
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        
+        @keyframes pulse-ring {
+            0% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 107, 53, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(255, 107, 53, 0); }
+            100% { transform: scale(0.8); box-shadow: 0 0 0 0 rgba(255, 107, 53, 0); }
+        }
+        .animate-pulse-ring { animation: pulse-ring 2s infinite; }
+        
+        .gallery-img { transition: transform 0.5s ease; }
+        .gallery-container:hover .gallery-img { transform: scale(1.05); }
+    </style>
+</head>
+<body class="antialiased">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 transition-all duration-300 py-4" id="navbar">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.scrollTo(0,0)">
+                    <i class="fa-solid fa-robot text-2xl text-white transition-colors" id="nav-icon"></i>
+                    <span class="font-bold text-xl text-white tracking-tight transition-colors" id="nav-logo">OYTS <span class="text-xs font-normal opacity-70 ml-2 hidden sm:inline">Piri Reis Üni.</span></span>
+                </div>
+                <div class="hidden lg:flex space-x-8 text-sm font-medium">
+                    <a href="#problem" class="text-white hover:text-gray-200 transition">Projenin Amacı</a>
+                    <a href="#cozum" class="text-white hover:text-gray-200 transition">Çözümümüz</a>
+                    <a href="#nasil-calisir" class="text-white hover:text-gray-200 transition">Nasıl Çalışır?</a>
+                    <a href="#galeri" class="text-white hover:text-gray-200 transition">Galeri</a>
+                    <a href="#ekip" class="text-white hover:text-gray-200 transition">Proje Ekibi</a>
+                    <a href="live.html" class="text-white hover:text-gray-200 transition inline-flex items-center gap-1.5">
+                        <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                        Canlı Demo
+                    </a>
+                </div>
+                <a href="live.html" class="bg-white text-[#0047AB] px-5 py-2 rounded-full font-semibold text-sm hover:bg-gray-100 transition shadow-lg inline-flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    Canlı Demo
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- BÖLÜM 1: HERO -->
+    <section class="hero-gradient min-h-screen flex items-center justify-center relative overflow-hidden pt-20">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-20 left-10 w-72 h-72 bg-white rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
+            <div class="absolute top-40 right-20 w-72 h-72 bg-[#FF6B35] rounded-full mix-blend-overlay filter blur-3xl opacity-50"></div>
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div class="text-left text-white fade-in-up">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 mb-6 text-sm font-medium">
+                        <span class="w-2 h-2 rounded-full bg-accent animate-pulse-ring"></span>
+                        BIP 2012 Bitirme Projesi
+                    </div>
+                    <h1 class="text-5xl lg:text-7xl font-extrabold tracking-tight leading-tight mb-6">
+                        Yangınlara Karşı <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-200 to-white">Otonom Çözüm</span>
+                    </h1>
+                    <p class="text-lg lg:text-xl text-blue-100 mb-8 max-w-lg leading-relaxed opacity-90">
+                        Piri Reis Üniversitesi Bilgisayar Programcılığı bitirme projemiz: İnsan hayatını riske atmadan, tehlikeli alanlara girip yangınlara kendi kendine müdahale edebilen bir robot tasarladık.
+                    </p>
+                    <div class="flex flex-wrap gap-4">
+                        <a href="#problem" class="bg-accent hover:bg-[#e55a2b] text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all shadow-lg shadow-orange-500/30 flex items-center gap-2">
+                            Nasıl Çalışıyor? <i class="fa-solid fa-arrow-down text-sm"></i>
+                        </a>
+                        <a href="#donanim" class="bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-sm text-white px-8 py-4 rounded-lg font-semibold text-lg transition-all">
+                            Kullanılan Teknolojiler
+                        </a>
+                    </div>
+                </div>
+                
+                <div class="hidden lg:flex justify-center items-center relative fade-in-up" style="transition-delay: 200ms;">
+                    <div class="relative w-96 h-96 animate-float">
+                        <div class="absolute inset-0 border-4 border-white/20 rounded-full border-dashed animate-spin" style="animation-duration: 20s;"></div>
+                        <div class="absolute inset-4 border-4 border-white/10 rounded-full animate-spin" style="animation-duration: 15s; animation-direction: reverse;"></div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="w-48 h-48 bg-white rounded-2xl shadow-2xl transform rotate-12 flex items-center justify-center relative overflow-hidden">
+                                <div class="absolute inset-0 bg-gradient-to-br from-gray-50 to-gray-200"></div>
+                                <i class="fa-solid fa-fire text-7xl text-accent relative z-10 animate-pulse"></i>
+                                <div class="absolute bottom-4 left-4 right-4 h-1 bg-gray-300 rounded overflow-hidden">
+                                    <div class="h-full bg-blue-600 w-2/3"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="absolute top-10 -left-10 bg-white p-3 rounded-lg shadow-xl text-xs font-mono font-bold text-gray-800">
+                            <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-green-500"></div> SİSTEM: AKTİF</div>
+                        </div>
+                        <div class="absolute bottom-10 -right-5 bg-white p-3 rounded-lg shadow-xl text-xs font-mono font-bold text-gray-800">
+                            <div class="text-blue-600">SICAKLIK: 24°C</div>
+                            <div class="text-accent mt-1">YANGIN TESPİTİ: %89</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="absolute bottom-10 left-1/2 transform -translate-x-1/2 animate-bounce">
+            <a href="#problem" class="text-white/50 hover:text-white transition">
+                <i class="fa-solid fa-chevron-down text-2xl"></i>
+            </a>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 2: PROBLEM -->
+    <section id="problem" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 fade-in-up">
+                <h2 class="text-accent font-bold tracking-widest text-sm uppercase mb-3">Çıkış Noktamız</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Neden Böyle Bir Robota İhtiyaç Duyduk?</h3>
+                <p class="text-lg text-gray-600">
+                    Endüstriyel tesisler, enkazlar veya madenler... Buralardaki yangınlara ilk müdahaleyi yapmak her zaman çok tehlikeli olmuştur. Klasik uzaktan kumandalı araçları incelediğimizde bazı temel sorunlar fark ettik:
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 fade-in-up">
+                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 relative overflow-hidden group hover:border-blue-200 transition-colors duration-300">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 transform group-hover:scale-110 transition duration-500 text-[#0047AB]">
+                        <i class="fa-solid fa-gamepad text-8xl"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                        <i class="fa-solid fa-eye-slash text-red-500 text-xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 relative z-10 text-gray-900">Sürekli Kontrol İhtiyacı</h4>
+                    <p class="text-gray-600 text-sm relative z-10">Kumandalı araçlar sürekli operatör dikkatine ihtiyaç duyuyor. Araya bir duvar girip sinyal koptuğunda araç maalesef tamamen işlevsiz kalıyor.</p>
+                </div>
+
+                <div class="bg-gray-50 p-8 rounded-2xl border border-gray-100 relative overflow-hidden group hover:border-blue-200 transition-colors duration-300">
+                    <div class="absolute top-0 right-0 p-4 opacity-10 transform group-hover:scale-110 transition duration-500 text-[#0047AB]">
+                        <i class="fa-solid fa-clock text-8xl"></i>
+                    </div>
+                    <div class="w-12 h-12 bg-red-100 rounded-xl flex items-center justify-center mb-6 relative z-10">
+                        <i class="fa-solid fa-stopwatch text-red-500 text-xl"></i>
+                    </div>
+                    <h4 class="text-xl font-bold mb-3 relative z-10 text-gray-900">İnsan Hatası ve Gecikmeler</h4>
+                    <p class="text-gray-600 text-sm relative z-10">Operatörün anlık bir dikkatsizliği veya kameradan kaynaklı gecikmeler, saniyelerin bile önemli olduğu yangın anlarında büyük sorunlara yol açabiliyor.</p>
+                </div>
+
+                <div class="bg-[#0047AB] p-8 rounded-2xl text-white relative overflow-hidden shadow-xl flex items-center shadow-blue-900/20 group">
+                    <div class="absolute -right-10 -bottom-10 opacity-20 transform group-hover:scale-110 transition duration-500">
+                        <i class="fa-solid fa-lightbulb text-9xl"></i>
+                    </div>
+                    <div class="relative z-10">
+                        <h4 class="text-xl font-bold mb-4 leading-tight">İşte bu yüzden sorduk: <br><br><span class="text-blue-200 font-medium">"Acaba dışarıdan komut beklemeden, engelleri kendi aşan ve ateşi kendi bulup söndüren bir sistem yapabilir miyiz?"</span></h4>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 3: ÇÖZÜM -->
+    <section id="cozum" class="py-24 bg-[#F8FAFF]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 fade-in-up">
+                <h2 class="text-[#0047AB] font-bold tracking-widest text-sm uppercase mb-3">Geliştirdiğimiz Sistem</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Çözümümüz: OYTS</h3>
+                <p class="text-lg text-gray-600">
+                    Geliştirdiğimiz bu robot sadece dümdüz hareket etmekle kalmıyor; <strong class="text-gray-900">çevresini analiz ediyor ve yangını bulduğunda bağımsız olarak karar verip müdahale edebiliyor.</strong>
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 card-hover transition duration-300 fade-in-up">
+                    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <i class="fa-solid fa-eye text-2xl text-[#0047AB]"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-center mb-4 text-gray-900">Görüyor</h4>
+                    <p class="text-gray-600 text-sm text-center">
+                        Webcam (veya tasarlanan ESP32-CAM modülü) ile ortamı sürekli izliyor. Yazdığımız görüntü işleme kodları sayesinde alevin rengini (kırmızı ve turuncu tonlarını) saniyeler içinde ayırt edebiliyor.
+                    </p>
+                    <p class="text-[11px] text-red-600 text-center mt-3 italic">
+                        ESP32-CAM modülü donanım eksikliği nedeniyle bu sürümde pasiftir; yerine webcam kullanılır.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 card-hover transition duration-300 fade-in-up" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <i class="fa-solid fa-brain text-2xl text-[#0047AB]"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-center mb-4 text-gray-900">Karar Veriyor</h4>
+                    <p class="text-gray-600 text-sm text-center">
+                        Ortamda birden fazla ateş varsa hangisinin daha acil olduğunu "Bulanık Mantık" (Fuzzy Logic) kullanarak hesaplıyor. Ardından en kısa yoldan oraya gitmek için rotasını çiziyor.
+                    </p>
+                </div>
+
+                <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 card-hover transition duration-300 fade-in-up" style="transition-delay: 200ms;">
+                    <div class="w-16 h-16 bg-orange-50 rounded-full flex items-center justify-center mb-6 mx-auto">
+                        <i class="fa-solid fa-bullseye text-2xl text-accent"></i>
+                    </div>
+                    <h4 class="text-xl font-bold text-center mb-4 text-gray-900">Müdahale Ediyor</h4>
+                    <p class="text-gray-600 text-sm text-center">
+                        Robot hedefe yeterince yaklaştığında veya ortam sıcaklığı tehlikeli seviyelere (60°C üstü) çıktığında güvenli bir şekilde duruyor ve otomatik müdahaleyi başlatıyor.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 4: NASIL ÇALIŞIR? -->
+    <section id="nasil-calisir" class="py-24 bg-white relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-20 fade-in-up">
+                <h2 class="text-accent font-bold tracking-widest text-sm uppercase mb-3">Çalışma Mantığı</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Sistem Arka Planda Nasıl İşliyor?</h3>
+            </div>
+
+            <div class="relative max-w-4xl mx-auto">
+                <div class="timeline-line"></div>
+
+                <!-- Adım 1 -->
+                <div class="relative flex items-center justify-between mb-16 w-full fade-in-up timeline-item text-gray-900">
+                    <div class="w-5/12 text-right pr-8 hidden md:block">
+                        <h4 class="text-xl font-bold text-[#0047AB] mb-2">1. Görüntü Yakalama</h4>
+                        <p class="text-gray-600 text-sm">Kamera modülü ortamın anlık görüntüsünü kablosuz ağ üzerinden ana sisteme aktarıyor. Yani robot aslında etrafını sürekli izliyor.</p>
+                    </div>
+                    <div class="timeline-point w-12 h-12 absolute left-1/2 transform -translate-x-1/2 rounded-full bg-white border-4 border-[#0047AB] flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-camera text-[#0047AB] text-sm"></i>
+                    </div>
+                    <div class="w-full md:w-5/12 md:pl-8">
+                        <div class="md:hidden mb-2">
+                            <h4 class="text-xl font-bold text-[#0047AB]">1. Görüntü Yakalama</h4>
+                            <p class="text-gray-600 text-sm">Kamera modülü ortamın anlık görüntüsünü kablosuz ağ üzerinden ana sisteme aktarıyor. Yani robot aslında etrafını sürekli izliyor.</p>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-green-400 shadow-xl overflow-x-auto text-left">
+                            <code>Stream: http://192.168.x.x/stream</code><br>
+                            <code>Durum: Bağlantı Başarılı</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adım 2 -->
+                <div class="relative flex items-center justify-between mb-16 w-full fade-in-up timeline-item text-gray-900">
+                    <div class="w-full md:w-5/12 md:text-right md:pr-8">
+                        <div class="md:hidden mb-2">
+                            <h4 class="text-xl font-bold text-[#0047AB]">2. Ateşi Tanıma</h4>
+                            <p class="text-gray-600 text-sm">Gelen görüntüleri Python kodlarımızla işliyoruz. Ortamdaki diğer ışıkları eleyip sadece gerçek alevin rengini odaklıyoruz.</p>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-blue-300 shadow-xl text-left overflow-x-auto">
+                            <code># Rengi ayırt et</code><br>
+                            <code>mask = cv2.inRange(hsv, alt_deger, ust_deger)</code>
+                        </div>
+                    </div>
+                    <div class="timeline-point w-12 h-12 absolute left-1/2 transform -translate-x-1/2 rounded-full bg-white border-4 border-[#0047AB] flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-fire text-[#0047AB] text-sm"></i>
+                    </div>
+                    <div class="w-5/12 pl-8 hidden md:block">
+                        <h4 class="text-xl font-bold text-[#0047AB] mb-2">2. Ateşi Tanıma</h4>
+                        <p class="text-gray-600 text-sm">Gelen görüntüleri Python kodlarımızla işliyoruz. Ortamdaki diğer ışıkları eleyip sadece gerçek alevin rengini odaklıyoruz.</p>
+                    </div>
+                </div>
+
+                <!-- Adım 3 -->
+                <div class="relative flex items-center justify-between mb-16 w-full fade-in-up timeline-item text-gray-900">
+                    <div class="w-5/12 text-right pr-8 hidden md:block">
+                        <h4 class="text-xl font-bold text-[#0047AB] mb-2">3. Öncelik Belirleme</h4>
+                        <p class="text-gray-600 text-sm">Bulunan yangınların boyutuna bakıp hangisinin daha tehlikeli olduğuna karar veriyoruz. Sistem bir nevi "Önce büyük olana gitmeliyim" diyor.</p>
+                    </div>
+                    <div class="timeline-point w-12 h-12 absolute left-1/2 transform -translate-x-1/2 rounded-full bg-white border-4 border-[#0047AB] flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-microchip text-[#0047AB] text-sm"></i>
+                    </div>
+                    <div class="w-full md:w-5/12 md:pl-8">
+                        <div class="md:hidden mb-2">
+                            <h4 class="text-xl font-bold text-[#0047AB]">3. Öncelik Belirleme</h4>
+                            <p class="text-gray-600 text-sm">Bulunan yangınların boyutuna bakıp hangisinin daha tehlikeli olduğuna karar veriyoruz. Sistem bir nevi "Önce büyük olana gitmeliyim" diyor.</p>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-yellow-300 shadow-xl overflow-x-auto text-left">
+                            <code>Eğer Yangın Alanı Büyükse -> Öncelik Yüksek</code><br>
+                            <code>Durum: Hedefe İlerliyor</code>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Adım 4 -->
+                <div class="relative flex items-center justify-between w-full fade-in-up timeline-item text-gray-900">
+                    <div class="w-full md:w-5/12 md:text-right md:pr-8">
+                        <div class="md:hidden mb-2">
+                            <h4 class="text-xl font-bold text-accent">4. Harekete Geçme</h4>
+                            <p class="text-gray-600 text-sm">Tüm bu kararlar saniyeler içinde verilip motorlara iletiliyor. Doğru açıyla hedefe gidip zamanında müdahale mekanizmasını çalıştırıyor.</p>
+                        </div>
+                        <div class="bg-gray-900 rounded-lg p-4 font-mono text-xs text-accent shadow-xl text-left overflow-x-auto">
+                            <code># Arduino'ya komut yolla</code><br>
+                            <code>Motorlar: İleri (Hız: 160)</code><br>
+                            <code>Hedefe Ulaşıldı -> Dur ve Kolu İndir</code>
+                        </div>
+                    </div>
+                    <div class="timeline-point w-12 h-12 absolute left-1/2 transform -translate-x-1/2 rounded-full bg-white border-4 border-accent flex items-center justify-center shadow-lg">
+                        <i class="fa-solid fa-check text-accent text-sm"></i>
+                    </div>
+                    <div class="w-5/12 pl-8 hidden md:block">
+                        <h4 class="text-xl font-bold text-accent mb-2">4. Harekete Geçme</h4>
+                        <p class="text-gray-600 text-sm">Tüm bu kararlar saniyeler içinde verilip motorlara iletiliyor. Doğru açıyla hedefe gidip zamanında müdahale mekanizmasını çalıştırıyor.</p>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 5: DONANIM & YAZILIM -->
+    <section id="donanim" class="py-24 bg-[#F8FAFF]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 fade-in-up">
+                <h2 class="text-[#0047AB] font-bold tracking-widest text-sm uppercase mb-3">Projeyi Nasıl Yaptık?</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Kullandığımız Bileşenler</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
+                <!-- Donanım -->
+                <div class="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 fade-in-up">
+                    <div class="flex items-center gap-4 mb-8 pb-4 border-b border-gray-100">
+                        <div class="w-12 h-12 bg-blue-50 rounded-lg flex items-center justify-center">
+                            <i class="fa-solid fa-robot text-[#0047AB] text-xl"></i>
+                        </div>
+                        <h4 class="text-2xl font-bold text-gray-900">Donanım Birimleri</h4>
+                    </div>
+                    <ul class="space-y-5 text-gray-700">
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-gears text-[#0047AB] mt-1"></i>
+                            <div><strong class="text-gray-900">REX Robot Şasisi:</strong> Araç iskeleti olarak 4 tekerlekten çekişli sağlam bir şasi kullandık.</div>
+                        </li>
+                        <li class="flex items-start gap-3 opacity-70">
+                            <i class="fa-solid fa-video text-[#0047AB] mt-1"></i>
+                            <div>
+                                <strong class="text-gray-900">ESP32-CAM:</strong> Robotun gözü olarak çalışan bu modül ortamı kaydedip bize yolluyor.
+                                <span class="inline-block ml-1 text-[10px] font-bold bg-red-100 text-red-700 px-1.5 py-0.5 rounded">PASİF</span>
+                                <div class="text-xs text-slate-500 italic mt-1">Donanım eksikliği nedeniyle bu sürümde devre dışı — yerine webcam kullanılıyor.</div>
+                            </div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-microchip text-[#0047AB] mt-1"></i>
+                            <div><strong class="text-gray-900">Arduino Mega 2560:</strong> Alt tarafta motorları ve hareket komutlarını yöneten asıl beyin.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-bolt text-[#0047AB] mt-1"></i>
+                            <div><strong class="text-gray-900">L298N Motor Sürücü:</strong> Motorlara ne kadar güç gideceğini ayarlayan ara parça.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-temperature-full text-[#0047AB] mt-1"></i>
+                            <div><strong class="text-gray-900">Sensör ve Servolar:</strong> Fiziksel müdahaleyi yapmak için servo kol ve ısıyı ölçmek için sıcaklık sensörü.</div>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Yazılım -->
+                <div class="bg-[#0047AB] p-8 rounded-2xl shadow-lg text-white fade-in-up" style="transition-delay: 100ms;">
+                    <div class="flex items-center gap-4 mb-8 pb-4 border-b border-blue-800">
+                        <div class="w-12 h-12 bg-white/10 rounded-lg flex items-center justify-center backdrop-blur-sm">
+                            <i class="fa-solid fa-code text-white text-xl"></i>
+                        </div>
+                        <h4 class="text-2xl font-bold">Yazılım Teknolojileri</h4>
+                    </div>
+                    <ul class="space-y-5">
+                        <li class="flex items-start gap-3">
+                            <i class="fa-brands fa-python text-blue-300 mt-1"></i>
+                            <div><strong class="text-white">Python ve OpenCV:</strong> Görüntüleri analiz etmek ve hedefleri belirlemek için yazdığımız kodların temeli.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-palette text-blue-300 mt-1"></i>
+                            <div><strong class="text-white">HSV Filtreleme:</strong> Işık koşulları değişse bile alev rengini doğru tanımamızı sağlayan renk uzayı.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-network-wired text-blue-300 mt-1"></i>
+                            <div><strong class="text-white">Bulanık Mantık (Fuzzy Logic):</strong> Robotun da bizim gibi "Burası biraz sıcak", "Şu ateş daha tehlikeli" gibi esnek kararlar verebilmesi için kullandık.</div>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <i class="fa-solid fa-route text-blue-300 mt-1"></i>
+                            <div><strong class="text-white">Simulated Annealing:</strong> Birden fazla hedefe gideceksek en az batarya harcayıp en hızlı nasıl giderizi hesaplayan algoritma.</div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 5.5: GALERİ -->
+    <section id="galeri" class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 fade-in-up">
+                <h2 class="text-accent font-bold tracking-widest text-sm uppercase mb-3">Çalışmalarımız</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Projemizden Kareler</h3>
+                <p class="text-lg text-gray-600">Robotumuzun yapım ve test aşamalarından bazı anlar.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 fade-in-up">
+                <div class="gallery-container rounded-2xl overflow-hidden shadow-md border border-gray-100 aspect-video md:aspect-square relative group bg-gray-100">
+                    <img src="photo/photo1.jpg" alt="Proje Görseli 1" class="w-full h-full object-cover gallery-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full w-full bg-gray-100 text-gray-400\'><i class=\'fa-solid fa-image text-4xl\'></i></div>'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                        <div class="p-4 text-white">
+                            <p class="font-medium text-sm">Geliştirme Aşaması</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-container rounded-2xl overflow-hidden shadow-md border border-gray-100 aspect-video md:aspect-square relative group bg-gray-100">
+                    <img src="photo/photo2.jpeg" alt="Proje Görseli 2" class="w-full h-full object-cover gallery-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full w-full bg-gray-100 text-gray-400\'><i class=\'fa-solid fa-image text-4xl\'></i></div>'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                        <div class="p-4 text-white">
+                            <p class="font-medium text-sm">Donanım Birleşimi</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="gallery-container rounded-2xl overflow-hidden shadow-md border border-gray-100 aspect-video md:aspect-square relative group bg-gray-100">
+                    <img src="photo/photo3.jpeg" alt="Proje Görseli 3" class="w-full h-full object-cover gallery-img" onerror="this.onerror=null; this.parentElement.innerHTML='<div class=\'flex items-center justify-center h-full w-full bg-gray-100 text-gray-400\'><i class=\'fa-solid fa-image text-4xl\'></i></div>'">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end">
+                        <div class="p-4 text-white">
+                            <p class="font-medium text-sm">Sistem Testi</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 6: EKİP -->
+    <section id="ekip" class="py-24 bg-[#F8FAFF]">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center max-w-3xl mx-auto mb-16 fade-in-up">
+                <h2 class="text-accent font-bold tracking-widest text-sm uppercase mb-3">Biz Kimiz?</h2>
+                <h3 class="text-3xl md:text-4xl font-bold text-gray-900 mb-6">Proje Ekibi</h3>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12 max-w-4xl mx-auto">
+                <!-- Sema -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-100 flex items-start gap-6 card-hover transition duration-300 fade-in-up shadow-sm">
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-400 to-[#0047AB] rounded-full flex-shrink-0 flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg">
+                        SI
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-1">Sema Nur Işık</h4>
+                        <p class="text-[#0047AB] text-sm font-semibold mb-3">Proje Eş Geliştiricisi</p>
+                        <p class="text-gray-600 text-sm">Robotun hem yazılımsal algoritma geliştirmesinde (OpenCV, ESP32) hem de genel sistem entegrasyonu aşamalarında tüm süreci birlikte yürüttük.</p>
+                    </div>
+                </div>
+
+                <!-- Efe -->
+                <div class="bg-white rounded-2xl p-6 border border-gray-100 flex items-start gap-6 card-hover transition duration-300 fade-in-up shadow-sm" style="transition-delay: 100ms;">
+                    <div class="w-16 h-16 md:w-20 md:h-20 bg-gradient-to-br from-blue-400 to-[#0047AB] rounded-full flex-shrink-0 flex items-center justify-center text-white text-xl md:text-2xl font-bold shadow-lg">
+                        ED
+                    </div>
+                    <div>
+                        <h4 class="text-xl font-bold text-gray-900 mb-1">Efe Düzçay</h4>
+                        <p class="text-[#0047AB] text-sm font-semibold mb-3">Proje Eş Geliştiricisi</p>
+                        <p class="text-gray-600 text-sm">Donanımsal parçaların montajı, Arduino bağlantıları ve projenin yazılımsal altyapısının test edilmesi gibi süreçleri uçtan uca ortaklaşa kurguladık.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center bg-white rounded-2xl p-8 max-w-2xl mx-auto border border-gray-100 shadow-sm fade-in-up">
+                <p class="text-sm text-gray-500 uppercase tracking-widest font-semibold mb-6">Proje Danışmanlarımız</p>
+                <div class="flex flex-col md:flex-row justify-center items-center gap-6 md:gap-16">
+                    <div class="text-center">
+                        <i class="fa-solid fa-user-tie text-3xl text-[#0047AB] mb-3 opacity-80"></i>
+                        <h4 class="text-xl font-bold text-gray-900">Erkan AYDIN</h4>
+                    </div>
+                    <div class="hidden md:block w-px h-12 bg-gray-300"></div>
+                    <div class="text-center">
+                        <i class="fa-solid fa-user-tie text-3xl text-[#0047AB] mb-3 opacity-80"></i>
+                        <h4 class="text-xl font-bold text-gray-900">Prof. Refik Tanju SİRMEN</h4>
+                    </div>
+                </div>
+                <div class="mt-8 pt-6 border-t border-gray-200">
+                    <p class="text-gray-600 font-medium">Piri Reis Üniversitesi • Bilgisayar Programcılığı Bölümü</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BÖLÜM 7: VİZYON (FOOTER) -->
+    <section class="py-20 bg-[#001f4d] relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(circle at 2px 2px, white 1px, transparent 0); background-size: 32px 32px;"></div>
+        
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 fade-in-up">
+            <h2 class="text-3xl font-bold text-white mb-6">Üniversite Laboratuvarından Gerçek Hayata</h2>
+            <p class="text-blue-200 text-lg mb-12">
+                Bu projeyi üniversitede bir bitirme ödevi olarak başlattık ama aslında çok daha büyük bir hayalimiz var: İnsanları tehlikeye atmadan, yangınlara otonom şekilde müdahale edilebilecek bir gelecek.
+            </p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-16">
+                <div class="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-xl">
+                    <i class="fa-solid fa-industry text-2xl text-accent mb-2"></i>
+                    <p class="text-white text-sm font-medium">Endüstriyel Ölçek</p>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-xl">
+                    <i class="fa-solid fa-wifi text-2xl text-accent mb-2"></i>
+                    <p class="text-white text-sm font-medium">5G ile Uzaktan Kontrol</p>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-xl">
+                    <i class="fa-solid fa-users-gear text-2xl text-accent mb-2"></i>
+                    <p class="text-white text-sm font-medium">Sürü (Swarm) Robotlar</p>
+                </div>
+                <div class="bg-white/5 backdrop-blur-sm border border-white/10 p-4 rounded-xl">
+                    <i class="fa-solid fa-leaf text-2xl text-accent mb-2"></i>
+                    <p class="text-white text-sm font-medium">Uzun Batarya Ömrü</p>
+                </div>
+            </div>
+            
+            <div class="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+                <div class="text-white font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-robot"></i> OYTS Projesi <span class="font-normal text-sm text-blue-300 ml-2">© 2026</span>
+                </div>
+                <div class="text-blue-300 text-sm">
+                    Piri Reis Üniversitesi • BIP 2012
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript for Interactions -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navbar = document.getElementById('navbar');
+            const navLogo = document.getElementById('nav-logo');
+            const navIcon = document.getElementById('nav-icon');
+            const navLinks = navbar.querySelectorAll('a:not(.bg-white)');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 50) {
+                    navbar.classList.add('bg-white', 'shadow-md', 'py-2');
+                    navbar.classList.remove('bg-transparent', 'py-4');
+                    navLogo.classList.remove('text-white');
+                    navLogo.classList.add('text-[#0047AB]');
+                    navIcon.classList.remove('text-white');
+                    navIcon.classList.add('text-[#0047AB]');
+                    navLinks.forEach(link => {
+                        link.classList.remove('text-white', 'hover:text-gray-200');
+                        link.classList.add('text-gray-600', 'hover:text-[#0047AB]');
+                    });
+                } else {
+                    navbar.classList.remove('bg-white', 'shadow-md', 'py-2');
+                    navbar.classList.add('bg-transparent', 'py-4');
+                    navLogo.classList.add('text-white');
+                    navLogo.classList.remove('text-[#0047AB]');
+                    navIcon.classList.add('text-white');
+                    navIcon.classList.remove('text-[#0047AB]');
+                    navLinks.forEach(link => {
+                        link.classList.add('text-white', 'hover:text-gray-200');
+                        link.classList.remove('text-gray-600', 'hover:text-[#0047AB]');
+                    });
+                }
+            });
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.15
+            };
+
+            const observer = new IntersectionObserver((entries, observer) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('visible');
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('.fade-in-up').forEach(element => {
+                observer.observe(element);
+            });
+        });
+    </script>
+</body>
+</html>
