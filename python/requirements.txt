@@ -15,6 +15,10 @@ Pillow>=10.0.0
 
 # YOLOv8 (Ultralytics) - eğitim, çıkarım, eval
 ultralytics>=8.2.0
+# Ultralytics tracker (ByteTrack) icin zorunlu — ultralytics auto-install
+# etmeye calisiyor ama PyInstaller analizi oncesi kurulu olmali.
+lap>=0.5.12
+scipy>=1.10.0
 
 # PyTorch (CUDA ile)
 torch>=2.2.0

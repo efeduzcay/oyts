@@ -54,10 +54,17 @@ hiddenimports += collect_submodules("torch")
 hiddenimports += collect_submodules("torchvision")
 hiddenimports += collect_submodules("cv2")
 hiddenimports += collect_submodules("flask")
+# lap (ByteTrack tracker bagimliligi) — submodule ve binary'leri tamamla
+hiddenimports += collect_submodules("lap")
+hiddenimports += collect_submodules("scipy")
+# lap paketinin __init__.py'si + .pyd binary'si bundle'a girsin
+datas += collect_data_files("lap", include_py_files=True)
+datas += collect_data_files("ultralytics", include_py_files=True)
 hiddenimports += [
     "yaml", "numpy", "scipy", "matplotlib",
     "matplotlib.backends.backend_agg",
     "PIL", "pyserial", "serial",
+    "lap", "lap._lapjv",
     # Tkinter (launcher UI) — embedded Python'da eksik olabilir
     "tkinter", "tkinter.ttk", "tkinter.font",
     # Proje modülleri
