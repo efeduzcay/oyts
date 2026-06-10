@@ -95,9 +95,10 @@ a = Analysis(
     hooksconfig={},
     runtime_hooks=[],
     excludes=[
+        # NOT: torch.testing ve torch.distributions exclude EDILEMEZ —
+        # torch.autograd.gradcheck import zincirinde gerekli, runtime'da
+        # ModuleNotFoundError verir. Sadece gercekten kullanilmayanlari hariç tut.
         "matplotlib.tests",
-        "torch.distributions",
-        "torch.testing",
         "scipy.spatial.tests",
     ],
     noarchive=False,

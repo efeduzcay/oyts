@@ -28,7 +28,9 @@ LicenseFile=
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
 OutputBaseFilename=OYTS-Setup-{#MyAppVersion}
-SetupIconFile=icon.ico
+; SetupIconFile kaldirildi — icon.ico repo'da yok, build patliyordu.
+; Icon eklemek istersen build_windows/icon.ico koy ve asagi satirin yorumunu kaldir:
+; SetupIconFile=icon.ico
 Compression=lzma
 SolidCompression=yes
 WizardStyle=modern
