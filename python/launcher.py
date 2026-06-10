@@ -47,6 +47,12 @@ FRONTEND_PORT = 8765
 HEALTHZ_URL   = f"http://127.0.0.1:{BACKEND_PORT}/healthz"
 FRONTEND_URL  = f"http://127.0.0.1:{FRONTEND_PORT}/live.html"
 
+# Loopback isteklerinde HTTP_PROXY/HTTPS_PROXY ortam değişkenleri devreye girip
+# isteği proxy'ye yönlendiriyor (NO_PROXY urllib tarafından güvenilir biçimde
+# uygulanmıyor). Localhost probe'larında proxy'yi tamamen bypass eden bir opener
+# kullanıyoruz.
+_NO_PROXY_OPENER = urllib.request.build_opener(urllib.request.ProxyHandler({}))
+
 IS_WINDOWS = platform.system() == "Windows"
 IS_MACOS   = platform.system() == "Darwin"
 
@@ -286,7 +292,7 @@ class DemoController:
         deadline = time.time() + timeout
         while time.time() < deadline:
             try:
-                with urllib.request.urlopen(HEALTHZ_URL, timeout=1) as r:
+                with _NO_PROXY_OPENER.open(HEALTHZ_URL, timeout=1) as r:
                     if r.status == 200:
                         return True
             except (urllib.error.URLError, urllib.error.HTTPError, ConnectionError, OSError):
@@ -327,7 +333,7 @@ class DemoController:
     def health_check(self) -> str:
         """UI polling — 'running:<source>' | 'stopped' | 'orphan'."""
         try:
-            with urllib.request.urlopen(HEALTHZ_URL, timeout=0.5) as r:
+            with _NO_PROXY_OPENER.open(HEALTHZ_URL, timeout=0.5) as r:
                 if r.status == 200:
                     if self.source:
                         return f"running:{self.source}"
