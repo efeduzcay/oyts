@@ -17,6 +17,7 @@ import queue
 import signal
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 import tkinter as tk
@@ -27,10 +28,18 @@ from pathlib import Path
 from tkinter import font as tkfont
 from tkinter import ttk
 
-REPO_ROOT  = Path(__file__).resolve().parent.parent
-PYTHON_DIR = REPO_ROOT / "python"
-WEB_DIR    = REPO_ROOT / "web"
-LOG_DIR    = Path(os.environ.get("TMPDIR", "/tmp")) / "oyts_demo"
+# PyInstaller frozen modu: .exe içinde paketlenmişiz.
+# _MEIPASS = geçici çıkartma klasörü; python/ ve web/ oraya kopyalanır.
+FROZEN = bool(getattr(sys, "frozen", False))
+if FROZEN:
+    REPO_ROOT  = Path(getattr(sys, "_MEIPASS"))
+    PYTHON_DIR = REPO_ROOT / "python"
+    WEB_DIR    = REPO_ROOT / "web"
+else:
+    REPO_ROOT  = Path(__file__).resolve().parent.parent
+    PYTHON_DIR = REPO_ROOT / "python"
+    WEB_DIR    = REPO_ROOT / "web"
+LOG_DIR    = Path(tempfile.gettempdir()) / "oyts_demo"
 LOG_DIR.mkdir(parents=True, exist_ok=True)
 
 BACKEND_PORT  = 5050
@@ -119,7 +128,14 @@ class DemoController:
     # Process helpers
     @staticmethod
     def _kill_pattern(pattern: str) -> int:
-        """Eski instansları öldür; öldürülen sayısını döner."""
+        """Eski instansları öldür; öldürülen sayısını döner.
+
+        Frozen .exe modunda komut satırı python.exe ile başlamadığı için
+        WMIC pattern eşleşmez — orphan temizliği atlanır (popen handle
+        ile yapılan normal stop() yeterli).
+        """
+        if FROZEN:
+            return 0
         killed = 0
         if IS_WINDOWS:
             try:
@@ -151,8 +167,22 @@ class DemoController:
         """Aktif Python yorumlayıcısının yolu."""
         return sys.executable
 
+    # Subprocess komut üretici — frozen .exe self-dispatch eder
+    def _cmd_webapp(self, *extra: str) -> list[str]:
+        if FROZEN:
+            return [sys.executable, "--oyts-mode=webapp", *extra]
+        return [self._python(), str(PYTHON_DIR / "web_app.py"), *extra]
+
+    def _cmd_serve(self, *extra: str) -> list[str]:
+        if FROZEN:
+            return [sys.executable, "--oyts-mode=serve", *extra]
+        return [self._python(), str(WEB_DIR / "serve.py"), *extra]
+
     # Setup (paketler + model)
     def run_setup(self) -> bool:
+        if FROZEN:
+            # .exe'de bağımlılıklar zaten gömülü; pip kurulumu gerekmez.
+            return True
         self.log("• Ortam kontrolü...")
         try:
             result = subprocess.run(
@@ -172,6 +202,9 @@ class DemoController:
 
     # Doctor preflight
     def run_doctor(self, source: str = "any") -> bool:
+        if FROZEN:
+            # Doctor pip / venv kontrolü yapıyor — .exe'de anlamsız. Geç.
+            return True
         self.log(f"• Preflight ({source})...")
         try:
             result = subprocess.run(
@@ -217,19 +250,20 @@ class DemoController:
 
             self.log(f"• Backend başlıyor (source={source})...")
             self.backend = subprocess.Popen(
-                [self._python(), str(PYTHON_DIR / "web_app.py"),
-                 *cfg_args,
-                 "--port", str(BACKEND_PORT),
-                 "--source", source,
-                 "--autostart"],
-                cwd=str(PYTHON_DIR),
+                self._cmd_webapp(
+                    *cfg_args,
+                    "--port", str(BACKEND_PORT),
+                    "--source", source,
+                    "--autostart",
+                ),
+                cwd=str(PYTHON_DIR) if not FROZEN else None,
                 stdout=backend_log, stderr=subprocess.STDOUT,
             )
 
             self.log("• Frontend başlıyor...")
             self.frontend = subprocess.Popen(
-                [self._python(), str(WEB_DIR / "serve.py"), str(FRONTEND_PORT)],
-                cwd=str(REPO_ROOT),
+                self._cmd_serve(str(FRONTEND_PORT)),
+                cwd=str(REPO_ROOT) if not FROZEN else None,
                 stdout=frontend_log, stderr=subprocess.STDOUT,
             )
 

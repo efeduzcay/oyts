@@ -10,9 +10,9 @@
 
 #define MyAppName "OYTS"
 #define MyAppFullName "OYTS - Otonom Yangin Tespit Sistemi"
-#define MyAppVersion "3.1.1"
+#define MyAppVersion "3.1.3"
 #define MyAppPublisher "Piri Reis Universitesi - BIP 2012"
-#define MyAppExeName "OYTS.exe"
+#define MyAppExeName "Baslat.exe"
 
 [Setup]
 AppId={{D4F8B2A1-5C3E-4A6D-9B1F-2E8C7D4A6B5E}
@@ -43,25 +43,25 @@ Name: "desktopicon"; Description: "Masaüstüne k&ısayol oluştur"; GroupDescri
 Name: "quicklaunchicon"; Description: "&Hızlı başlatmaya kısayol oluştur"; GroupDescription: "Ek k&ısayollar:"; Flags: unchecked
 
 [Files]
-; PyInstaller çıktısı: dist\OYTS\ dizini
-Source: "..\dist\OYTS\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
+; PyInstaller çıktısı: dist\Baslat\ dizini
+Source: "..\dist\Baslat\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 ; README + lisans
 Source: "README_WINDOWS.txt"; DestDir: "{app}"; Flags: ignoreversion isreadme
 ; İkon
 Source: "icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#MyAppName} (Simulasyon)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--source synthetic"; IconFilename: "{app}\icon.ico"; Comment: "Yangin sahnesi sentetik olarak — donanim gerekmez"
-Name: "{group}\{#MyAppName} (Webcam)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--source webcam"; IconFilename: "{app}\icon.ico"; Comment: "Bilgisayar kamerasi — cakmak/mum testi"
-Name: "{group}\{#MyAppName} (ESP32-CAM)"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--source esp32"; IconFilename: "{app}\icon.ico"; Comment: "ESP32-CAM Wi-Fi stream — gercek robot"
+; Tek kısayol — Baslat.exe çift tıklanınca Tkinter launcher penceresi açılır,
+; kullanıcı webcam / simulasyon / durdur seçimini oradan yapar.
+Name: "{group}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Comment: "OYTS launcher — webcam / simulasyon penceresi"
 Name: "{group}\Beni Oku"; Filename: "{app}\README_WINDOWS.txt"
 Name: "{group}\Kaldır {#MyAppName}"; Filename: "{uninstallexe}"
 
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Parameters: "--source synthetic"; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
+Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\icon.ico"; Tasks: desktopicon
 Name: "{userappdata}\Microsoft\Internet Explorer\Quick Launch\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: quicklaunchicon
 
 [Run]
-Filename: "{app}\{#MyAppExeName}"; Description: "{#MyAppName} simülasyonu hemen baslat"; Flags: nowait postinstall skipifsilent; Parameters: "--source synthetic"
+Filename: "{app}\{#MyAppExeName}"; Description: "{#MyAppName} launcher'i simdi ac"; Flags: nowait postinstall skipifsilent
 
 [UninstallDelete]
 Type: filesandordirs; Name: "{app}\kayitlar"

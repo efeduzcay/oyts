@@ -13,8 +13,8 @@ REM    cd build_windows
 REM    build_windows.bat
 REM
 REM  Cikti:
-REM    dist\OYTS\OYTS.exe              <- direkt calisir
-REM    Output\OYTS-Setup-3.1.1.exe     <- Inno Setup kurulum sihirbazi
+REM    dist\Baslat\Baslat.exe          <- cift tikla, Tkinter penceresi acilir
+REM    Output\OYTS-Setup-3.1.3.exe     <- Inno Setup kurulum sihirbazi
 REM ============================================================
 setlocal
 cd /d "%~dp0"
@@ -53,7 +53,7 @@ echo  Adim 3/4: PyInstaller ile .exe paketle
 echo ============================================================
 if exist dist rmdir /s /q dist
 if exist build rmdir /s /q build
-pyinstaller oyts_launcher.spec --noconfirm
+pyinstaller baslat.spec --noconfirm
 if errorlevel 1 (
     echo [HATA] PyInstaller basarisiz.
     pause
@@ -61,8 +61,8 @@ if errorlevel 1 (
 )
 
 echo.
-echo .exe hazir: dist\OYTS\OYTS.exe
-echo Test etmek icin: dist\OYTS\OYTS.exe
+echo .exe hazir: dist\Baslat\Baslat.exe
+echo Test etmek icin: dist\Baslat\Baslat.exe (cift tikla)
 
 echo.
 echo ============================================================
@@ -81,14 +81,14 @@ if errorlevel 1 (
     pause
     exit /b 3
 )
-echo Installer hazir: Output\OYTS-Setup-3.1.1.exe
+echo Installer hazir: Output\OYTS-Setup-3.1.3.exe
 
 :done
 echo.
 echo ============================================================
 echo  BITTI
 echo ============================================================
-echo .exe        : %CD%\dist\OYTS\OYTS.exe
-echo Installer   : %CD%\Output\OYTS-Setup-3.1.1.exe (varsa)
+echo .exe        : %CD%\dist\Baslat\Baslat.exe
+echo Installer   : %CD%\Output\OYTS-Setup-3.1.3.exe (varsa)
 echo.
 pause

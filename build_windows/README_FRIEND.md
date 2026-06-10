@@ -55,34 +55,35 @@ Bu komut sırasıyla:
 
 İki şey üretilir:
 
-### `dist\OYTS\OYTS.exe`
-Doğrudan çalışan .exe. Klasör içinde **~400-600 MB** dosya var (torch, ultralytics, model). Tek başına taşınabilir.
+### `dist\Baslat\Baslat.exe`
+Çift tıkla → **Tkinter launcher penceresi** açılır (Baslat.command'in Windows karşılığı). Klasör içinde **~400-600 MB** dosya var (torch, ultralytics, model). Tek başına taşınabilir.
 
-```cmd
-dist\OYTS\OYTS.exe              REM Sentetik mod (varsayılan)
-dist\OYTS\OYTS.exe --source webcam
-dist\OYTS\OYTS.exe --source esp32
-```
+Pencerede 3 büyük buton:
+- 📷 **Kameralı Başlat** (webcam)
+- 🎬 **Simülasyon** (sentetik yangın — donanım gerekmez)
+- ⏹ **Durdur**
 
-### `Output\OYTS-Setup-3.1.1.exe`
+Argüman gerekmez; kullanıcı modu pencereden seçer.
+
+### `Output\OYTS-Setup-3.1.3.exe`
 Inno Setup installer (~250 MB sıkıştırılmış). Hoca'ya bunu ver — çift tıkla, sihirbaz açılır, Türkçe arayüz, masaüstüne kısayol oluşturur.
 
 ---
 
 ## Test
 
-`.exe`'yi çalıştırınca:
-1. Konsol penceresi açılır, başlangıç logları akar
-2. ~3 saniye sonra tarayıcı otomatik açılır: `http://127.0.0.1:8765/index.html`
-3. Sağ üstte **🔴 Canlı Demo** butonu → demo sayfası
-4. Sentetik modda 2 yangın bbox görünmeli, FPS ~10
+`Baslat.exe`'yi çift tıklayınca:
+1. Konsol penceresi + Tkinter launcher penceresi açılır
+2. "🎬 Simülasyon"a bas → backend hazırlanır, ~5 sn sonra tarayıcı `http://127.0.0.1:8765/live.html` açılır
+3. Sentetik modda 2 yangın bbox görünmeli, FPS ~10
+4. "⏹ Durdur" → backend kapanır, kamera serbest kalır
 
 ---
 
 ## Sorun çıkarsa
 
 ### "ModuleNotFoundError: No module named ..."
-Eksik bir hidden import var. `oyts_launcher.spec` içinde `hiddenimports = [...]` listesine ekle, tekrar build et.
+Eksik bir hidden import var. `baslat.spec` içinde `hiddenimports = [...]` listesine ekle, tekrar build et.
 
 ### "PyInstaller exited with code 1"
 Genelde dependency çakışması. Şu komutu çalıştır:
@@ -103,7 +104,7 @@ set ISCC="C:\Senin\Yolun\ISCC.exe"
 
 ### Çok büyük dosya (~400 MB+)
 PyInstaller torch'u içeri alıyor. Boyutu küçültmek için:
-1. `oyts_launcher.spec` içinde `excludes = ["torch.distributions", "scipy.tests", ...]` listesi var
+1. `baslat.spec` içinde `excludes = ["torch.distributions", "scipy.tests", ...]` listesi var
 2. Daha agresif olmak için: `pip install torch --index-url https://download.pytorch.org/whl/cpu`
    (CUDA paketi 2GB; CPU-only ~200MB)
 
@@ -113,7 +114,7 @@ PyInstaller torch'u içeri alıyor. Boyutu küçültmek için:
 
 PyInstaller spec'te `console=True` yazıyor — log görünür. Gizli istersen:
 ```python
-# oyts_launcher.spec içinde:
+# baslat.spec içinde:
 exe = EXE(...
     console=False,  # ← True yerine False
     ...)
