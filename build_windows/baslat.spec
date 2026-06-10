@@ -18,7 +18,7 @@ Build (Windows üzerinde):
 Çıktı:
     dist/Baslat/Baslat.exe + bağımlılıklar (~400-600 MB)
 """
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, collect_all
 import os
 
 # SPECPATH zaten spec dosyasının bulunduğu dizin (build_windows/).
@@ -49,17 +49,21 @@ datas.append((os.path.join(PROJECT, "web"), "web"))
 
 # Hidden imports
 hiddenimports = []
-hiddenimports += collect_submodules("ultralytics")
+binaries = []
 hiddenimports += collect_submodules("torch")
 hiddenimports += collect_submodules("torchvision")
 hiddenimports += collect_submodules("cv2")
 hiddenimports += collect_submodules("flask")
-# lap (ByteTrack tracker bagimliligi) — submodule ve binary'leri tamamla
-hiddenimports += collect_submodules("lap")
 hiddenimports += collect_submodules("scipy")
-# lap paketinin __init__.py'si + .pyd binary'si bundle'a girsin
-datas += collect_data_files("lap", include_py_files=True)
-datas += collect_data_files("ultralytics", include_py_files=True)
+
+# collect_all → paketin TUM dosyalarini (datas + binaries + submodules) topla.
+# collect_data_files lap'in __init__.py'sini almiyordu → import lap kiriliyordu.
+# Bu yontem garanti — pip install eden ne varsa bundle'a girer.
+for pkg in ("lap", "ultralytics"):
+    _d, _b, _h = collect_all(pkg)
+    datas += _d
+    binaries += _b
+    hiddenimports += _h
 hiddenimports += [
     "yaml", "numpy", "scipy", "matplotlib",
     "matplotlib.backends.backend_agg",
@@ -84,7 +88,7 @@ a = Analysis(
         os.path.join(PROJECT, "python"),
         os.path.join(PROJECT, "web"),
     ],
-    binaries=[],
+    binaries=binaries,
     datas=datas,
     hiddenimports=hiddenimports,
     hookspath=[],

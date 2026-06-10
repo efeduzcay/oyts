@@ -228,8 +228,14 @@ try:
     sys.modules.setdefault("ultralytics.yolo", _u_yolo)
     sys.modules.setdefault("ultralytics.yolo.utils", _u_utils)
     from ultralytics import YOLO
-except ImportError:
-    print("Ultralytics kurulu değil. `pip install -r requirements.txt`")
+except ImportError as _e:
+    # Gercek hatayi bastir (yoksa "Ultralytics yok" yanilti veriyor —
+    # asil sebep alt-bagimliliklardan biri olabilir, ornek: lap, scipy, torch DLL).
+    import traceback
+    print("Import hatasi (ultralytics zinciri):", _e, file=sys.stderr)
+    traceback.print_exc()
+    print("Cozum: `pip install -r requirements.txt` veya PyInstaller bundle "
+          "icinde eksik paket var (spec'e collect_all ekle).", file=sys.stderr)
     sys.exit(1)
 
 # Lokal modüller
