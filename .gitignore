@@ -16,12 +16,21 @@ env/
 .mypy_cache/
 .ruff_cache/
 
-# Modeller (büyük binaryler — Release ile dağıt)
+# Modeller (büyük binaryler)
+# .pt dosyalari .exe paketleme icin gerekli → 5 ana modeli whitelist et,
+# yedekleri / arastirma cikrilarini disla.
 *.pt
 *.pth
 *.onnx
 *.engine
 *.tflite
+!python/fire_model.pt
+!python/fire_model_roboflow.pt
+!python/fire_model_v3_real.pt
+!python/fire_model_v311_mixed.pt
+!python/yolov8s.pt
+# Yedek / backup modelleri hala disli
+python/fire_model_backup_*.pt
 
 # Eğitim çıktıları + veri kümeleri (yüzlerce MB)
 python/runs/
@@ -41,6 +50,15 @@ sunum/OYTS_Sunum.pptx
 # Loglar
 *.log
 logs/
+
+# Yerel build ciktilari (PyInstaller dist + transfer zip'leri)
+Baslat/
+build_windows/dist/
+build_windows/build/
+build_windows/venv/
+build_windows/Output/
+Baslat_eksik_modeller.zip
+Baslat-Windows-*.zip
 
 # macOS
 .DS_Store
