@@ -20,7 +20,7 @@ Tek dosya istersen (--onefile, daha yavaş başlangıç):
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 import os
 
-ROOT = os.path.abspath(os.path.dirname(SPECPATH))
+ROOT = os.path.abspath(SPECPATH)
 PROJECT = os.path.abspath(os.path.join(ROOT, os.pardir))
 
 
